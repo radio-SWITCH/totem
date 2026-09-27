@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#080d1a" />
+    <meta name="description" content="Totem informacyjny Zespołu Szkół Informatycznych w Kielcach — zegar, plan dnia, pogoda, wydarzenia i ciekawostki." />
+    <title>ZSI Kielce — Totem informacyjny</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234C82FF'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='700' font-size='28' fill='%2304122c' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <div class="page">
+
+        <!-- Górny pasek -->
+        <header class="topbar reveal" style="--d:0ms">
+            <div class="brand">
+                <div class="brand-mark">
+                    <img id="schoolLogo" src="https://www.zsi.kielce.pl/wp-content/uploads/2020/03/logo-mobile.png" alt="Zespół Szkół Informatycznych" onerror="handleLogoError()">
+                </div>
+                <div class="brand-text">
+                    <div class="brand-name">Zespół Szkół Informatycznych</div>
+                    <div class="brand-sub">im. gen. Józefa Hauke-Bosaka, Kielce</div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Hero: zegar + stan lekcji -->
+            <section class="hero reveal" style="--d:60ms" aria-label="Aktualny czas i stan lekcji">
+                <div class="hero-time">
+                    <div class="hero-clock" id="heroClock">--:--:--</div>
+                    <div class="hero-date" id="heroDate">—</div>
+                </div>
+                <div class="hero-lesson">
+                    <div class="ring-wrap">
+                        <svg viewBox="0 0 150 150">
+                            <circle class="ring-track" cx="75" cy="75" r="62"></circle>
+                            <circle class="ring-progress" id="ringProgress" cx="75" cy="75" r="62"></circle>
+                        </svg>
+                        <div class="ring-center" id="ringEmoji">⏳</div>
+                    </div>
+                    <div class="hero-lesson-info">
+                        <span class="live-tag"><span class="live-dot"></span>na żywo</span>
+                        <div class="lesson-status" id="lessonStatus">Wczytywanie…</div>
+                        <div class="lesson-timer" id="lessonTimer">--:--</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Szybkie informacje -->
+            <section class="chips" aria-label="Szybkie informacje">
+                <div class="chip reveal" style="--d:110ms">
+                    <div class="chip-icon" aria-hidden="true">🌤️</div>
+                    <div>
+                        <div class="chip-label">Pogoda w Kielcach</div>
+                        <div class="chip-value">
+                            <img id="weatherIcon" src="" alt="" />
+                            <span id="weatherTemp">--</span>°C
+                            <small id="weatherDesc">wczytywanie…</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="chip reveal" style="--d:150ms">
+                    <div class="chip-icon" aria-hidden="true">🥳</div>
+                    <div>
+                        <div class="chip-label">Imieniny dziś świętują</div>
+                        <div class="chip-value text" id="imieninyValue">Ładuję dane…</div>
+                    </div>
+                </div>
+                <div class="chip reveal" style="--d:190ms">
+                    <div class="chip-icon" aria-hidden="true">🎓</div>
+                    <div>
+                        <div class="chip-label">Do końca roku szkolnego</div>
+                        <div class="chip-value" id="countdownValue">--</div>
+                    </div>
+                </div>
+                <div class="chip reveal" style="--d:230ms">
+                    <div class="chip-icon" aria-hidden="true">🏖️</div>
+                    <div>
+                        <div class="chip-label">Do najbliższego dnia wolnego</div>
+                        <div class="chip-value" id="dayOffValue">--</div>
+                        <div class="chip-sub" id="dayOffName"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bento: treści -->
+            <div class="bento">
+
+                <article class="panel panel--school reveal" style="--d:230ms">
+                    <h2>🏫 O naszej szkole</h2>
+                    <p>Zespół Szkół Informatycznych w Kielcach to nowoczesna placówka edukacyjna, która od lat kształci specjalistów w branży IT oraz innych dziedzinach technicznych.</p>
+                    <p>Oferujemy naukę na następujących kierunkach:</p>
+                    <ul class="dot-list">
+                        <li>Technik informatyk</li>
+                        <li>Technik informatyk z elementami cyberbezpieczeństwa</li>
+                        <li>Technik teleinformatyk</li>
+                        <li>Technik urządzeń i systemów energetyki odnawialnej</li>
+                        <li>Technik programista</li>
+                    </ul>
+                    <p>Więcej informacji znajdziesz na oficjalnej stronie szkoły: <a href="http://zsi.kielce.pl" target="_blank" rel="noopener noreferrer">zsi.kielce.pl</a></p>
+                </article>
+
+                <article class="panel panel--radio reveal" style="--d:260ms">
+                    <h2>🎙️ Radiowęzeł SWITCH</h2>
+                    <p>Radiowęzeł każdego tygodnia emituje nowy utwór jako szkolny dzwonek oraz informuje o aktualnościach.</p>
+                    <p>Więcej informacji na stronie: <a href="https://switch.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">switch.zsi.kielce.pl</a></p>
+                    <h3>Aktualny dzwonek</h3>
+                    <div class="radio-row">
+                        <div class="eq" id="eqBars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                        <audio controls id="dzwonekAudio">
+                            <source src="https://www.zsi.kielce.pl/wp-content/uploads/DZWONEK.mp3" type="audio/mpeg">
+                            Twoja przeglądarka nie obsługuje odtwarzania audio.
+                        </audio>
+                    </div>
+                </article>
+
+                <article class="panel panel--news reveal" style="--d:275ms">
+                    <h2>📰 Aktualności ze strony szkoły</h2>
+                    <ul class="news-list" id="newsList">
+                        <li>Wczytywanie aktualności…</li>
+                    </ul>
+                    <p><a href="https://www.zsi.kielce.pl/" target="_blank" rel="noopener noreferrer">Więcej aktualności na stronie szkoły</a></p>
+                </article>
+
+                <article class="panel panel--erasmus reveal" style="--d:290ms">
+                    <h2>🇪🇺 Projekt Erasmus+ „Zawodowcy z Informatyki na europejskim rynku pracy”</h2>
+                    <p>Projekt skierowany jest do uczniów klas trzecich i czwartych o profilu technik informatyk, technik programista, technik teleinformatyk oraz technik urządzeń i systemów energetyki odnawialnej.</p>
+                    <p>Więcej informacji znajdziesz na stronie projektu: <a href="https://erasmusplus.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">erasmusplus.zsi.kielce.pl</a></p>
+                    <div class="gallery-grid" id="erasmusGallery">
+                        <img src="https://erasmusplus.zsi.kielce.pl/2025/static/media/img122.6b4e5774316d0c4c2bb6.jpg" alt="Zdjęcie z projektu Erasmus+ 1">
+                        <img src="https://erasmusplus.zsi.kielce.pl/2025/static/media/img063.7dc6eb0afb1ea264a3f0.jpg" alt="Zdjęcie z projektu Erasmus+ 2">
+                        <img src="https://erasmusplus.zsi.kielce.pl/2025/static/media/img077.48eec98d806b3d87107f.jpg" alt="Zdjęcie z projektu Erasmus+ 3">
+                    </div>
+                </article>
+
+                <article class="panel panel--game reveal" style="--d:320ms">
+                    <div>
+                        <h2>🎮 Zwiedzaj ZSI inaczej</h2>
+                        <p>Wejdź do gry edukacyjnej stworzonej przez uczniów ZSI i odkrywaj szkolne zakamarki w nietypowy sposób.</p>
+                    </div>
+                    <button class="btn" onclick="window.open('https://gra.zsi.kielce.pl', '_blank')">Zagraj</button>
+                </article>
+
+                <article class="panel panel--guide reveal" style="--d:350ms">
+                    <h2>🗓️ Jak się odnaleźć w budynku</h2>
+                    <p>Sprawdzenie planu lekcji jest proste — użyj jednego z poniższych narzędzi:</p>
+                    <ul class="dot-list">
+                        <li><a href="https://plan.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">plan.zsi.kielce.pl</a> — oficjalny plan zajęć uczniów i nauczycieli</li>
+                        <li><a href="https://gdziesala.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">gdziesala.zsi.kielce.pl</a> — sprawdź, gdzie odbywają się lekcje</li>
+                        <li><a href="https://kursprzetrwania.zsi.kielce.pl/teachers.html" target="_blank" rel="noopener noreferrer">kursprzetrwania.zsi.kielce.pl</a> — rozwinięcia skrótów nauczycieli na planie</li>
+                    </ul>
+                </article>
+
+                <article class="panel panel--fact reveal" style="--d:380ms">
+                    <h2>💡 Ciekawostka informatyczna</h2>
+                    <p class="fact-box" id="factBox">Ładowanie ciekawostki…</p>
+                </article>
+
+                <article class="panel panel--quiz reveal" style="--d:410ms">
+                    <h2>🧠 Quiz INF.02 / INF.03</h2>
+                    <div class="quiz-box">
+                        <p id="randomQuestion">Wczytywanie…</p>
+                        <div class="quiz-opts" id="quizOpts"></div>
+                        <div class="quiz-expl" id="quizExpl"></div>
+                        <button class="btn btn--ghost" id="quizNext" onclick="quizAdvance()">➡️ Następne pytanie</button>
+                        <div class="quiz-meta" id="quizMeta"></div>
+                    </div>
+                </article>
+
+                <article class="panel panel--events reveal" style="--d:440ms">
+                    <h2>📅 Wydarzenia szkolne (dni wolne)</h2>
+                    <ul class="events-list" id="eventsList"></ul>
+                </article>
+
+                <article class="panel panel--holiday reveal" style="--d:470ms">
+                    <h2>🎉 Nietypowe święto dnia</h2>
+                    <div id="holidayText">Ładowanie…</div>
+                </article>
+
+
+
+
+
+
+                <article class="panel panel--good reveal" style="--d:500ms">
+                    <h2>Dobre wiadomości</h2>
+                    <ul class="news-list" id="goodList"><li>Wczytywanie…</li></ul>
+                    <small class="src">Źródło: <a href="https://dobrewiadomosci.net.pl/" target="_blank" rel="noopener noreferrer">dobrewiadomosci.net.pl</a></small>
+                </article>
+
+                <article class="panel panel--history reveal" style="--d:520ms">
+                    <h2>📜 Tego dnia w historii</h2>
+                    <ul class="events-list" id="historyList"><li>Wczytywanie…</li></ul>
+                    <small class="src">Źródło: <a href="https://pl.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a></small>
+                </article>
+
+
+
+                <article class="panel panel--air reveal" style="--d:530ms">
+                    <h2>☀️ Słońce dziś</h2>
+                    <ul class="kv-list" id="airList"><li>Wczytywanie…</li></ul>
+                    <small class="src">Źródło: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></small>
+                </article>
+
+                <article class="panel panel--iss reveal" style="--d:560ms">
+                    <h2>🛰️ Stacja ISS teraz</h2>
+                    <ul class="kv-list" id="issList"><li>Wczytywanie…</li></ul>
+                    <small class="src">Źródło: wheretheiss.at</small>
+                </article>
+
+                <article class="panel panel--gh reveal" style="--d:590ms">
+                    <h2>🐙 Hity GitHuba (7 dni)</h2>
+                    <ul class="kv-list" id="ghList"><li>Wczytywanie…</li></ul>
+                    <small class="src">Źródło: GitHub</small>
+                </article>
+            </div>
+        </main>
+    </div>
+
+    <!-- Pasek przewijany -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="tickerTrack"><span class="item">Wczytywanie danych…</span></div>
+    </div>
+
+    <footer>
+        <p>© 2026 Zespół Szkół Informatycznych w Kielcach | Technikum nr 7<br>
+            TecMaschin Administrator: <b><a href="https://www.linkedin.com/in/aleksander-pabian" target="_blank" rel="noopener noreferrer">A. Pabian</a></b></p>
+        <small>Pogoda: <a href="https://www.weatherapi.com/" target="_blank" rel="noopener noreferrer">WeatherAPI.com</a> · Powietrze i prognoza: Open-Meteo · Kursy: NBP · Dobre wiadomości: dobrewiadomosci.net.pl · Historia: Wikipedia · ISS: wheretheiss.at · GitHub</small>
+    </footer>
+
+    <!-- Tryb nocny: czarny ekran z analogowym zegarem (po lekcjach) -->
+    <div class="night" id="night" aria-hidden="true">
+        <div class="night-drift"><svg id="nightClock" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <g id="nightFace"></g>
+            <line id="nightHour" x1="100" y1="100" x2="100" y2="54" class="hand hand--hour"></line>
+            <line id="nightMin" x1="100" y1="100" x2="100" y2="30" class="hand hand--min"></line>
+            <circle cx="100" cy="100" r="3.4" class="hub"></circle>
+        </svg></div>
+    </div>
+
+    <!-- Lightbox galerii -->
+    <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Zamknij">✕</button>
+        <img id="lightboxImg" src="" alt="">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

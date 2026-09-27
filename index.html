@@ -1,260 +1,841 @@
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#080d1a" />
-    <meta name="description" content="Totem informacyjny Zespołu Szkół Informatycznych w Kielcach — zegar, plan dnia, pogoda, wydarzenia i ciekawostki." />
-    <title>ZSI Kielce — Totem informacyjny</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234C82FF'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='700' font-size='28' fill='%2304122c' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="description" content="Quiz muzyczny na Europejski Dzień Języków Obcych — zgadnij język piosenki. ZSI Kielce, organizator: Switch.">
+<title>Jaki to język? — Europejski Dzień Języków Obcych, ZSI Kielce</title>
+<style>
+  :root{
+    --ink:#12131A;
+    --ink-soft:#1E2029;
+    --paper:#F3EFE6;
+    --amber:#FFB627;
+    --teal:#2FB8AC;
+    --coral:#FF5D5D;
+    --line:rgba(243,239,230,.14);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; min-height:100%; }
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Segoe UI','Helvetica Neue',Arial,system-ui,-apple-system,sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    overflow-x:hidden;
+  }
+  button{ font-family:inherit; }
+
+  /* ---------- layout ---------- */
+  .view{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 20px; }
+  .view[hidden]{ display:none; }
+  .stage{ width:100%; max-width:720px; display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; }
+  .stage-narrow{ max-width:560px; }
+
+  /* ---------- equalizer hero ---------- */
+  .eq{ display:flex; gap:6px; align-items:flex-end; height:60px; margin-bottom:2px; }
+  .eq span{ width:7px; border-radius:3px; background:var(--amber); animation:eqbounce 1.2s ease-in-out infinite; }
+  .eq span:nth-child(odd){ background:var(--teal); }
+  .eq span:nth-child(1){ animation-delay:0s; }
+  .eq span:nth-child(2){ animation-delay:.15s; }
+  .eq span:nth-child(3){ animation-delay:.3s; }
+  .eq span:nth-child(4){ animation-delay:.45s; }
+  .eq span:nth-child(5){ animation-delay:.2s; }
+  .eq span:nth-child(6){ animation-delay:.35s; }
+  .eq span:nth-child(7){ animation-delay:.05s; }
+  @keyframes eqbounce{ 0%,100%{ height:12px; } 50%{ height:52px; } }
+
+  /* ---------- typography ---------- */
+  .headline{ font-size:clamp(28px,6vw,50px); font-weight:900; letter-spacing:-.02em; line-height:1.06; margin:0; }
+  .headline-mid{ font-size:clamp(24px,5vw,34px); }
+  .subhead{ font-size:clamp(18px,3.4vw,25px); font-weight:600; color:var(--amber); margin:0; }
+  .lede{ font-size:clamp(15px,2.2vw,18px); line-height:1.55; color:rgba(243,239,230,.82); max-width:56ch; margin:0; }
+  .fineprint{ font-size:.85rem; color:rgba(243,239,230,.6); margin:0; }
+  .credit{ font-size:.85rem; color:rgba(243,239,230,.5); text-align:center; padding:18px 0 26px; }
+  .storage-warning{ color:var(--coral); font-size:.85rem; max-width:520px; text-align:center; margin-top:4px; }
+
+  /* ---------- poster panel (cut-corner ticket look) ---------- */
+  .poster-panel{
+    background:var(--ink-soft);
+    border:2px solid var(--line);
+    clip-path:polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+    position:relative;
+    padding:clamp(20px,5vw,36px);
+    width:100%;
+  }
+  .poster-panel::before{
+    content:""; position:absolute; top:0; right:0; width:26px; height:26px;
+    background:var(--amber); clip-path:polygon(100% 0, 0 0, 100% 100%);
+  }
+  .panel-title{ font-size:1rem; font-weight:800; margin:0 0 12px; }
+
+  /* ---------- buttons ---------- */
+  .btn-primary{
+    background:var(--amber); color:var(--ink); border:none; font-weight:800;
+    font-size:1.1rem; padding:16px 36px; border-radius:999px; cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); }
+  .btn-primary:active{ transform:translateY(0) scale(.98); }
+  .btn-huge{ font-size:clamp(1.15rem,3vw,1.5rem); padding:20px 48px; }
+  .btn-ghost{
+    background:transparent; color:var(--paper); border:2px solid var(--line);
+    font-weight:700; padding:12px 28px; border-radius:999px; cursor:pointer;
+  }
+  .btn-danger{
+    background:var(--coral); color:var(--ink); border:none; font-weight:800;
+    padding:12px 24px; border-radius:999px; cursor:pointer;
+  }
+  button:focus-visible, input:focus-visible{ outline:3px solid var(--teal); outline-offset:2px; }
+
+  /* ---------- leaderboard ---------- */
+  .lb-list{ display:flex; flex-direction:column; gap:8px; }
+  .lb-row{
+    display:grid; grid-template-columns:26px 1fr auto auto; gap:10px; align-items:center;
+    padding:8px 10px; border-radius:8px; background:rgba(243,239,230,.04); font-size:.95rem;
+  }
+  .lb-row.is-you{ background:rgba(255,182,39,.16); border:1px solid var(--amber); }
+  .lb-rank{ font-weight:800; color:var(--amber); font-variant-numeric:tabular-nums; }
+  .lb-name{ text-align:left; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-class{ color:rgba(243,239,230,.65); font-size:.85rem; }
+  .lb-time{ font-variant-numeric:tabular-nums; font-weight:700; }
+  .lb-empty{ color:rgba(243,239,230,.6); font-size:.9rem; margin:0; }
+
+  /* ---------- form ---------- */
+  .form-panel{ display:flex; flex-direction:column; gap:16px; }
+  .field{ display:flex; flex-direction:column; gap:6px; text-align:left; font-weight:600; }
+  .field input{
+    background:var(--ink); border:2px solid var(--line); border-radius:10px;
+    color:var(--paper); padding:14px 16px; font-size:1.05rem;
+  }
+  .field input:focus-visible{ outline:3px solid var(--teal); outline-offset:0; border-color:var(--teal); }
+  .form-error{ color:var(--coral); font-weight:700; margin:0; }
+
+  /* ---------- quiz ---------- */
+  .quiz-top{ display:flex; justify-content:space-between; width:100%; font-weight:700; font-variant-numeric:tabular-nums; }
+  .round-label{ color:rgba(243,239,230,.75); }
+  .timer-display{ color:var(--amber); font-size:1.1rem; }
+  .quiz-panel{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .btn-play-circle{
+    width:96px; height:96px; border-radius:50%; background:var(--amber); border:none;
+    color:var(--ink); font-size:1.6rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .play-label{ margin:0; font-weight:700; color:rgba(243,239,230,.85); }
+  .question{ font-size:clamp(1.1rem,3vw,1.35rem); margin:8px 0 4px; }
+  .options-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; width:100%; }
+  .option-btn{
+    background:var(--ink); border:2px solid var(--line); color:var(--paper);
+    font-weight:700; font-size:clamp(.95rem,2.2vw,1.1rem); padding:18px 10px; border-radius:14px;
+    cursor:pointer; min-height:64px; overflow-wrap:break-word; hyphens:auto;
+  }
+  .option-btn:disabled{ cursor:default; }
+  .option-btn.is-correct{ background:rgba(47,184,172,.18); border-color:var(--teal); color:var(--teal); }
+  .option-btn.is-wrong{ background:rgba(255,93,93,.18); border-color:var(--coral); color:var(--coral); }
+
+  /* ---------- result ---------- */
+  .result-panel{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .result-score{ font-size:clamp(2.2rem,8vw,3.2rem); font-weight:900; margin:0; font-variant-numeric:tabular-nums; }
+  .result-time{ font-size:1.15rem; color:var(--amber); margin:0; font-weight:700; }
+  .result-message{ margin:0; font-size:1.05rem; }
+  .lb-panel-inner{ width:100%; margin-top:6px; }
+
+  /* ---------- admin ---------- */
+  .admin-gear{
+    position:fixed; bottom:14px; right:14px; width:40px; height:40px; border-radius:50%;
+    background:transparent; border:1px solid rgba(243,239,230,.15); color:rgba(243,239,230,.25);
+    font-size:1.1rem; cursor:pointer; z-index:400;
+  }
+  .admin-gear:hover{ color:rgba(243,239,230,.6); }
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center;
+    justify-content:center; z-index:600; padding:20px;
+  }
+  .modal-backdrop[hidden]{ display:none; }
+  .modal-panel{
+    background:var(--ink-soft); border:2px solid var(--line); border-radius:16px; padding:28px;
+    width:100%; max-width:380px; display:flex; flex-direction:column; gap:14px; text-align:left;
+  }
+  .modal-panel-wide{ max-width:760px; max-height:82vh; overflow-y:auto; }
+  .modal-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .admin-table-wrap{ overflow-x:auto; }
+  .admin-table{ width:100%; border-collapse:collapse; font-size:.9rem; }
+  .admin-table th, .admin-table td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  .admin-summary{ color:rgba(243,239,230,.7); margin:0; }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--paper);
+    color:var(--ink); padding:12px 20px; border-radius:10px; font-weight:700; z-index:700;
+    max-width:90vw; text-align:center;
+  }
+  .toast.is-error{ background:var(--coral); }
+
+  /* ---------- confetti ---------- */
+  .confetti-piece{
+    position:fixed; top:-20px; width:10px; height:16px; opacity:.9; border-radius:2px;
+    pointer-events:none; animation:confetti-fall linear forwards; z-index:500;
+  }
+  @keyframes confetti-fall{ to{ transform:translateY(110vh) rotate(540deg); opacity:.4; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .eq span{ animation:none; height:28px; }
+    .btn-primary:hover, .btn-primary:active{ transform:none; }
+    .confetti-piece{ display:none; }
+  }
+</style>
 </head>
-
 <body>
-    <div class="bg-grid" aria-hidden="true"></div>
 
-    <div class="page">
+<noscript><div style="padding:40px;text-align:center;">Ta strona wymaga włączonego JavaScriptu.</div></noscript>
 
-        <!-- Górny pasek -->
-        <header class="topbar reveal" style="--d:0ms">
-            <div class="brand">
-                <div class="brand-mark">
-                    <img id="schoolLogo" src="https://www.zsi.kielce.pl/wp-content/uploads/2020/03/logo-mobile.png" alt="Zespół Szkół Informatycznych" onerror="handleLogoError()">
-                </div>
-                <div class="brand-text">
-                    <div class="brand-name">Zespół Szkół Informatycznych</div>
-                    <div class="brand-sub">im. gen. Józefa Hauke-Bosaka, Kielce</div>
-                </div>
-            </div>
-        </header>
+<audio id="player" preload="auto" style="display:none"></audio>
 
-        <main>
-            <!-- Hero: zegar + stan lekcji -->
-            <section class="hero reveal" style="--d:60ms" aria-label="Aktualny czas i stan lekcji">
-                <div class="hero-time">
-                    <div class="hero-clock" id="heroClock">--:--:--</div>
-                    <div class="hero-date" id="heroDate">—</div>
-                </div>
-                <div class="hero-lesson">
-                    <div class="ring-wrap">
-                        <svg viewBox="0 0 150 150">
-                            <circle class="ring-track" cx="75" cy="75" r="62"></circle>
-                            <circle class="ring-progress" id="ringProgress" cx="75" cy="75" r="62"></circle>
-                        </svg>
-                        <div class="ring-center" id="ringEmoji">⏳</div>
-                    </div>
-                    <div class="hero-lesson-info">
-                        <span class="live-tag"><span class="live-dot"></span>na żywo</span>
-                        <div class="lesson-status" id="lessonStatus">Wczytywanie…</div>
-                        <div class="lesson-timer" id="lessonTimer">--:--</div>
-                    </div>
-                </div>
-            </section>
+<!-- ========== EKRAN STARTOWY ========== -->
+<section id="view-start" class="view" hidden>
+  <div class="stage">
+    <div class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <h1 class="headline">Europejski Dzień Języków Obcych</h1>
+    <p class="subhead">Jaka to melodia… ale jaki to język?</p>
+    <p class="lede">Posłuchaj krótkiego fragmentu piosenki i zgadnij, w jakim języku śpiewa wykonawca. Pięć pytań, liczy się czas — pięć najszybszych osób z kompletem poprawnych odpowiedzi wygrywa nagrody.</p>
 
-            <!-- Szybkie informacje -->
-            <section class="chips" aria-label="Szybkie informacje">
-                <div class="chip reveal" style="--d:110ms">
-                    <div class="chip-icon" aria-hidden="true">🌤️</div>
-                    <div>
-                        <div class="chip-label">Pogoda w Kielcach</div>
-                        <div class="chip-value">
-                            <img id="weatherIcon" src="" alt="" />
-                            <span id="weatherTemp">--</span>°C
-                            <small id="weatherDesc">wczytywanie…</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="chip reveal" style="--d:150ms">
-                    <div class="chip-icon" aria-hidden="true">🥳</div>
-                    <div>
-                        <div class="chip-label">Imieniny dziś świętują</div>
-                        <div class="chip-value text" id="imieninyValue">Ładuję dane…</div>
-                    </div>
-                </div>
-                <div class="chip reveal" style="--d:190ms">
-                    <div class="chip-icon" aria-hidden="true">🎓</div>
-                    <div>
-                        <div class="chip-label">Do końca roku szkolnego</div>
-                        <div class="chip-value" id="countdownValue">--</div>
-                    </div>
-                </div>
-                <div class="chip reveal" style="--d:230ms">
-                    <div class="chip-icon" aria-hidden="true">🏖️</div>
-                    <div>
-                        <div class="chip-label">Do najbliższego dnia wolnego</div>
-                        <div class="chip-value" id="dayOffValue">--</div>
-                        <div class="chip-sub" id="dayOffName"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Bento: treści -->
-            <div class="bento">
-
-                <article class="panel panel--school reveal" style="--d:230ms">
-                    <h2>🏫 O naszej szkole</h2>
-                    <p>Zespół Szkół Informatycznych w Kielcach to nowoczesna placówka edukacyjna, która od lat kształci specjalistów w branży IT oraz innych dziedzinach technicznych.</p>
-                    <p>Oferujemy naukę na następujących kierunkach:</p>
-                    <ul class="dot-list">
-                        <li>Technik informatyk</li>
-                        <li>Technik informatyk z elementami cyberbezpieczeństwa</li>
-                        <li>Technik teleinformatyk</li>
-                        <li>Technik urządzeń i systemów energetyki odnawialnej</li>
-                        <li>Technik programista</li>
-                    </ul>
-                    <p>Więcej informacji znajdziesz na oficjalnej stronie szkoły: <a href="http://zsi.kielce.pl" target="_blank" rel="noopener noreferrer">zsi.kielce.pl</a></p>
-                </article>
-
-                <article class="panel panel--radio reveal" style="--d:260ms">
-                    <h2>🎙️ Radiowęzeł SWITCH</h2>
-                    <p>Radiowęzeł każdego tygodnia emituje nowy utwór jako szkolny dzwonek oraz informuje o aktualnościach.</p>
-                    <p>Więcej informacji na stronie: <a href="https://switch.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">switch.zsi.kielce.pl</a></p>
-                    <h3>Aktualny dzwonek</h3>
-                    <div class="radio-row">
-                        <div class="eq" id="eqBars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-                        <audio controls id="dzwonekAudio">
-                            <source src="https://www.zsi.kielce.pl/wp-content/uploads/DZWONEK.mp3" type="audio/mpeg">
-                            Twoja przeglądarka nie obsługuje odtwarzania audio.
-                        </audio>
-                    </div>
-                </article>
-
-                <article class="panel panel--news reveal" style="--d:275ms">
-                    <h2>📰 Aktualności ze strony szkoły</h2>
-                    <ul class="news-list" id="newsList">
-                        <li>Wczytywanie aktualności…</li>
-                    </ul>
-                    <p><a href="https://www.zsi.kielce.pl/" target="_blank" rel="noopener noreferrer">Więcej aktualności na stronie szkoły</a></p>
-                </article>
-
-                <article class="panel panel--erasmus reveal" style="--d:290ms">
-                    <h2>🇪🇺 Projekt Erasmus+ „Zawodowcy z Informatyki na europejskim rynku pracy”</h2>
-                    <p>Projekt skierowany jest do uczniów klas trzecich i czwartych o profilu technik informatyk, technik programista, technik teleinformatyk oraz technik urządzeń i systemów energetyki odnawialnej.</p>
-                    <p>Więcej informacji znajdziesz na stronie projektu: <a href="https://erasmusplus.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">erasmusplus.zsi.kielce.pl</a></p>
-                    <div class="gallery-grid" id="erasmusGallery">
-                        <img src="https://erasmusplus.zsi.kielce.pl/2025/static/media/img122.6b4e5774316d0c4c2bb6.jpg" alt="Zdjęcie z projektu Erasmus+ 1">
-                        <img src="https://erasmusplus.zsi.kielce.pl/2025/static/media/img063.7dc6eb0afb1ea264a3f0.jpg" alt="Zdjęcie z projektu Erasmus+ 2">
-                        <img src="https://erasmusplus.zsi.kielce.pl/2025/static/media/img077.48eec98d806b3d87107f.jpg" alt="Zdjęcie z projektu Erasmus+ 3">
-                    </div>
-                </article>
-
-                <article class="panel panel--game reveal" style="--d:320ms">
-                    <div>
-                        <h2>🎮 Zwiedzaj ZSI inaczej</h2>
-                        <p>Wejdź do gry edukacyjnej stworzonej przez uczniów ZSI i odkrywaj szkolne zakamarki w nietypowy sposób.</p>
-                    </div>
-                    <button class="btn" onclick="window.open('https://gra.zsi.kielce.pl', '_blank')">Zagraj</button>
-                </article>
-
-                <article class="panel panel--guide reveal" style="--d:350ms">
-                    <h2>🗓️ Jak się odnaleźć w budynku</h2>
-                    <p>Sprawdzenie planu lekcji jest proste — użyj jednego z poniższych narzędzi:</p>
-                    <ul class="dot-list">
-                        <li><a href="https://plan.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">plan.zsi.kielce.pl</a> — oficjalny plan zajęć uczniów i nauczycieli</li>
-                        <li><a href="https://gdziesala.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">gdziesala.zsi.kielce.pl</a> — sprawdź, gdzie odbywają się lekcje</li>
-                        <li><a href="https://kursprzetrwania.zsi.kielce.pl/teachers.html" target="_blank" rel="noopener noreferrer">kursprzetrwania.zsi.kielce.pl</a> — rozwinięcia skrótów nauczycieli na planie</li>
-                    </ul>
-                </article>
-
-                <article class="panel panel--fact reveal" style="--d:380ms">
-                    <h2>💡 Ciekawostka informatyczna</h2>
-                    <p class="fact-box" id="factBox">Ładowanie ciekawostki…</p>
-                </article>
-
-                <article class="panel panel--quiz reveal" style="--d:410ms">
-                    <h2>🧠 Quiz INF.02 / INF.03</h2>
-                    <div class="quiz-box">
-                        <p id="randomQuestion">Wczytywanie…</p>
-                        <div class="quiz-opts" id="quizOpts"></div>
-                        <div class="quiz-expl" id="quizExpl"></div>
-                        <button class="btn btn--ghost" id="quizNext" onclick="quizAdvance()">➡️ Następne pytanie</button>
-                        <div class="quiz-meta" id="quizMeta"></div>
-                    </div>
-                </article>
-
-                <article class="panel panel--events reveal" style="--d:440ms">
-                    <h2>📅 Wydarzenia szkolne (dni wolne)</h2>
-                    <ul class="events-list" id="eventsList"></ul>
-                </article>
-
-                <article class="panel panel--holiday reveal" style="--d:470ms">
-                    <h2>🎉 Nietypowe święto dnia</h2>
-                    <div id="holidayText">Ładowanie…</div>
-                </article>
-
-
-
-
-
-
-                <article class="panel panel--good reveal" style="--d:500ms">
-                    <h2>Dobre wiadomości</h2>
-                    <ul class="news-list" id="goodList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: <a href="https://dobrewiadomosci.net.pl/" target="_blank" rel="noopener noreferrer">dobrewiadomosci.net.pl</a></small>
-                </article>
-
-                <article class="panel panel--history reveal" style="--d:520ms">
-                    <h2>📜 Tego dnia w historii</h2>
-                    <ul class="events-list" id="historyList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: <a href="https://pl.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a></small>
-                </article>
-
-
-
-                <article class="panel panel--air reveal" style="--d:530ms">
-                    <h2>☀️ Słońce dziś</h2>
-                    <ul class="kv-list" id="airList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></small>
-                </article>
-
-                <article class="panel panel--iss reveal" style="--d:560ms">
-                    <h2>🛰️ Stacja ISS teraz</h2>
-                    <ul class="kv-list" id="issList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: wheretheiss.at</small>
-                </article>
-
-                <article class="panel panel--gh reveal" style="--d:590ms">
-                    <h2>🐙 Hity GitHuba (7 dni)</h2>
-                    <ul class="kv-list" id="ghList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: GitHub</small>
-                </article>
-            </div>
-        </main>
+    <div class="poster-panel">
+      <h2 class="panel-title">Ranking na żywo</h2>
+      <div id="lb-start" class="lb-list"></div>
     </div>
 
-    <!-- Pasek przewijany -->
-    <div class="ticker" aria-hidden="true">
-        <div class="ticker-track" id="tickerTrack"><span class="item">Wczytywanie danych…</span></div>
+    <button id="btn-play" type="button" class="btn-primary btn-huge">Zagraj</button>
+    <p class="fineprint">Każda osoba może zagrać tylko raz.</p>
+    <p id="storage-warning" class="storage-warning" hidden>Ta przeglądarka nie zapisuje wyników — ranking i blokada podwójnego udziału mogą nie działać poprawnie na tym urządzeniu.</p>
+  </div>
+  <footer class="credit">Organizuje  Radiowezeł Switch, ZSI Kielce</footer>
+</section>
+
+<!-- ========== REJESTRACJA ========== -->
+<section id="view-register" class="view" hidden>
+  <div class="stage stage-narrow">
+    <h1 class="headline headline-mid">Zanim zaczniesz</h1>
+    <p class="lede">Wpisz dane, po których rozpoznamy Twój wynik w rankingu. Grasz tylko raz, więc się przygotuj!</p>
+    <form id="register-form" class="poster-panel form-panel">
+      <label class="field">
+        <span>Imię i nazwisko</span>
+        <input type="text" id="input-name" autocomplete="off" placeholder="np. Jan Kowalski" required>
+      </label>
+      <label class="field">
+        <span>Klasa</span>
+        <input type="text" id="input-class" autocomplete="off" placeholder="np. 3TI" required>
+      </label>
+      <p id="register-error" class="form-error" hidden></p>
+      <button type="submit" class="btn-primary btn-huge">Zaczynamy</button>
+    </form>
+    <button id="btn-back-start" type="button" class="btn-ghost">Wróć</button>
+  </div>
+</section>
+
+<!-- ========== QUIZ ========== -->
+<section id="view-quiz" class="view" hidden>
+  <div class="stage stage-narrow">
+    <div class="quiz-top">
+      <span id="round-label" class="round-label">Pytanie 1 z 5</span>
+      <span id="timer-display" class="timer-display">0,0 s</span>
     </div>
-
-    <footer>
-        <p>© 2026 Zespół Szkół Informatycznych w Kielcach | Technikum nr 7<br>
-            TecMaschin Administrator: <b><a href="https://www.linkedin.com/in/aleksander-pabian" target="_blank" rel="noopener noreferrer">A. Pabian</a></b></p>
-        <small>Pogoda: <a href="https://www.weatherapi.com/" target="_blank" rel="noopener noreferrer">WeatherAPI.com</a> · Powietrze i prognoza: Open-Meteo · Kursy: NBP · Dobre wiadomości: dobrewiadomosci.net.pl · Historia: Wikipedia · ISS: wheretheiss.at · GitHub</small>
-    </footer>
-
-    <!-- Tryb nocny: czarny ekran z analogowym zegarem (po lekcjach) -->
-    <div class="night" id="night" aria-hidden="true">
-        <div class="night-drift"><svg id="nightClock" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <g id="nightFace"></g>
-            <line id="nightHour" x1="100" y1="100" x2="100" y2="54" class="hand hand--hour"></line>
-            <line id="nightMin" x1="100" y1="100" x2="100" y2="30" class="hand hand--min"></line>
-            <circle cx="100" cy="100" r="3.4" class="hub"></circle>
-        </svg></div>
+    <div class="poster-panel quiz-panel">
+      <button id="btn-play-snippet" type="button" class="btn-play-circle" aria-label="Odsłuchaj fragment">
+        <span aria-hidden="true">▶</span>
+      </button>
+      <p id="play-label" class="play-label">Posłuchaj fragmentu</p>
+      <h2 class="question">W jakim języku śpiewa wykonawca?</h2>
+      <div id="options-wrap" class="options-grid"></div>
     </div>
+  </div>
+</section>
 
-    <!-- Lightbox galerii -->
-    <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Zamknij">✕</button>
-        <img id="lightboxImg" src="" alt="">
+<!-- ========== WYNIK ========== -->
+<section id="view-result" class="view" hidden>
+  <div class="stage stage-narrow">
+    <div class="poster-panel result-panel">
+      <p id="result-score" class="result-score">5 / 5</p>
+      <p id="result-time" class="result-time">Twój czas: 0,0 s</p>
+      <p id="result-message" class="result-message"></p>
+      <div class="lb-panel-inner">
+        <h2 class="panel-title">Ranking na żywo</h2>
+        <div id="lb-result" class="lb-list"></div>
+      </div>
+      <button id="btn-finish" type="button" class="btn-primary">Zakończ</button>
+      <p id="auto-return-note" class="fineprint"></p>
     </div>
+  </div>
+</section>
 
-    <script src="script.js"></script>
+<!-- ========== ADMIN: PIN ========== -->
+<div id="pin-modal" class="modal-backdrop" hidden>
+  <form id="pin-form" class="modal-panel">
+    <h2 style="margin:0;">Panel organizatora</h2>
+    <label class="field">
+      <span>PIN</span>
+      <input type="password" id="input-pin" inputmode="numeric" autocomplete="off">
+    </label>
+    <p id="pin-error" class="form-error" hidden>Nieprawidłowy PIN.</p>
+    <div class="modal-actions">
+      <button type="button" id="btn-cancel-pin" class="btn-ghost">Zamknij</button>
+      <button type="submit" class="btn-primary">Zaloguj</button>
+    </div>
+  </form>
+</div>
+
+<!-- ========== ADMIN: PANEL ========== -->
+<div id="admin-modal" class="modal-backdrop" hidden>
+  <div class="modal-panel modal-panel-wide">
+    <h2 style="margin:0;">Wyniki uczestników</h2>
+    <p id="admin-summary" class="admin-summary"></p>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Imię i nazwisko</th><th>Klasa</th><th>Wynik</th><th>Czas</th><th>Data</th></tr></thead>
+        <tbody id="admin-table-body"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="btn-export-csv" class="btn-ghost">Eksportuj CSV</button>
+      <button type="button" id="btn-clear-data" class="btn-danger">Wyczyść wszystkie dane</button>
+      <button type="button" id="btn-close-admin" class="btn-primary">Zamknij</button>
+    </div>
+  </div>
+</div>
+
+<button id="admin-gear" type="button" class="admin-gear" aria-label="Panel organizatora">⚙</button>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* =========================================================================
+   KONFIGURACJA — tu zmieniasz najważniejsze ustawienia quizu
+   ========================================================================= */
+const CONFIG = {
+  totalRounds: 5,        // ile piosenek/pytań w jednym podejściu
+  numOptions: 4,         // ile opcji językowych do wyboru w jednym pytaniu
+  snippetSeconds: 12,     // maksymalna długość odtwarzanego fragmentu (s)
+  autoReturnSeconds: 15,  // po ilu sekundach ekran wyniku wraca do startu
+  adminPin: "4451",       // PIN do panelu organizatora — ZMIEŃ przed wydarzeniem!
+  storageKey: "zsi_edj_quiz_v1",
+};
+
+/* Bank piosenek — DODAJ WŁASNE PRZED WYDARZENIEM!
+   Każdy wpis to jeden fragment: { lang, file, start? }.
+   - "lang"  — poprawny język (to on jest odpowiedzią)
+   - "file"  — ścieżka do pliku audio w folderze audio/
+   - "start" — (opcjonalnie) moment startu fragmentu w sekundach, jeśli chcesz
+               ręcznie wskazać miejsce z wokalem. Bez tego pola quiz sam
+               wylosuje bezpieczny fragment ze środka utworu.
+
+   Ten sam "lang" może wystąpić w kilku wpisach — to jest właśnie
+   zabezpieczenie przed nauczeniem się odpowiedzi na pamięć: im więcej
+   różnych piosenek/języków w banku, tym mniej powtarzalny jest quiz,
+   bo przy każdym podejściu losowanych jest tylko `totalRounds` z nich,
+   w losowej kolejności, z losowymi opcjami do wyboru. Poniżej są pliki
+   demonstracyjne (ten sam krótki dźwięk testowy) — zamień pole "file"
+   każdego wpisu na swój plik, zachowując unikalne nazwy. */
+const SONG_BANK = [
+  { lang: "Niemiecki",    file: "audio/de-1.mp3" },
+  { lang: "Francuski",    file: "audio/fr-2.mp3" },
+  { lang: "Hiszpański",   file: "audio/hs-3.mp3" },
+  { lang: "Włoski",       file: "audio/wl-5.mp3" },
+  { lang: "Portugalski",  file: "audio/pr-4.mp3" },
+];
+
+/* =========================================================================
+   FUNKCJE POMOCNICZE
+   ========================================================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function formatTime(ms){
+  const totalSeconds = ms/1000;
+  if(totalSeconds < 60){
+    return totalSeconds.toFixed(1).replace('.', ',') + ' s';
+  }
+  const m = Math.floor(totalSeconds/60);
+  const s = (totalSeconds - m*60).toFixed(1).replace('.', ',');
+  return `${m} min ${s} s`;
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function normalizeKey(name, klass){
+  return (name.trim() + '__' + klass.trim()).toLowerCase();
+}
+function csvSafe(v){
+  const s = String(v);
+  if(/[;"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+  return s;
+}
+
+/* =========================================================================
+   PRZECHOWYWANIE WYNIKÓW (localStorage tej przeglądarki/urządzenia)
+   ========================================================================= */
+let storageOK = true;
+try{
+  localStorage.setItem('__zsi_test__','1');
+  localStorage.removeItem('__zsi_test__');
+}catch(e){ storageOK = false; }
+
+function loadAttempts(){
+  if(!storageOK) return [];
+  try{
+    return JSON.parse(localStorage.getItem(CONFIG.storageKey)) || [];
+  }catch(e){ return []; }
+}
+function saveAttempt(record){
+  if(!storageOK) return;
+  const all = loadAttempts();
+  all.push(record);
+  try{ localStorage.setItem(CONFIG.storageKey, JSON.stringify(all)); }catch(e){}
+}
+function getLeaderboard(){
+  return loadAttempts()
+    .filter(a => a.correct === a.total)
+    .sort((a,b) => a.timeMs - b.timeMs)
+    .slice(0,5);
+}
+
+/* =========================================================================
+   ELEMENTY DOM
+   ========================================================================= */
+const player = document.getElementById('player');
+const views = {
+  start: document.getElementById('view-start'),
+  register: document.getElementById('view-register'),
+  quiz: document.getElementById('view-quiz'),
+  result: document.getElementById('view-result'),
+};
+const btnPlay = document.getElementById('btn-play');
+const storageWarning = document.getElementById('storage-warning');
+const lbStart = document.getElementById('lb-start');
+const lbResult = document.getElementById('lb-result');
+
+const registerForm = document.getElementById('register-form');
+const nameInput = document.getElementById('input-name');
+const classInput = document.getElementById('input-class');
+const registerError = document.getElementById('register-error');
+const btnBackStart = document.getElementById('btn-back-start');
+
+const roundLabel = document.getElementById('round-label');
+const timerDisplay = document.getElementById('timer-display');
+const btnPlaySnippet = document.getElementById('btn-play-snippet');
+const playLabel = document.getElementById('play-label');
+const optionsWrap = document.getElementById('options-wrap');
+
+const resultScore = document.getElementById('result-score');
+const resultTime = document.getElementById('result-time');
+const resultMessage = document.getElementById('result-message');
+const btnFinish = document.getElementById('btn-finish');
+const autoReturnNote = document.getElementById('auto-return-note');
+
+const adminGear = document.getElementById('admin-gear');
+const pinModal = document.getElementById('pin-modal');
+const pinForm = document.getElementById('pin-form');
+const pinInput = document.getElementById('input-pin');
+const pinError = document.getElementById('pin-error');
+const btnCancelPin = document.getElementById('btn-cancel-pin');
+const adminModal = document.getElementById('admin-modal');
+const adminSummary = document.getElementById('admin-summary');
+const adminTableBody = document.getElementById('admin-table-body');
+const btnExportCsv = document.getElementById('btn-export-csv');
+const btnClearData = document.getElementById('btn-clear-data');
+const btnCloseAdmin = document.getElementById('btn-close-admin');
+
+const toast = document.getElementById('toast');
+
+/* =========================================================================
+   NAWIGACJA WIDOKÓW
+   ========================================================================= */
+function showView(name){
+  Object.entries(views).forEach(([key, el]) => { el.hidden = key !== name; });
+  window.scrollTo(0,0);
+}
+
+/* =========================================================================
+   RANKING — render do dowolnego kontenera
+   ========================================================================= */
+function renderLeaderboardInto(container, highlightTimestamp){
+  const top = getLeaderboard();
+  container.innerHTML = '';
+  if(top.length === 0){
+    const p = document.createElement('p');
+    p.className = 'lb-empty';
+    p.textContent = 'Nikt jeszcze nie zdobył kompletu punktów. Może to będziesz Ty?';
+    container.appendChild(p);
+    return;
+  }
+  top.forEach((rec, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (rec.timestamp === highlightTimestamp ? ' is-you' : '');
+    row.innerHTML =
+      `<span class="lb-rank">${i+1}</span>` +
+      `<span class="lb-name">${escapeHtml(rec.name)}</span>` +
+      `<span class="lb-class">${escapeHtml(rec.klass)}</span>` +
+      `<span class="lb-time">${formatTime(rec.timeMs)}</span>`;
+    container.appendChild(row);
+  });
+}
+
+/* =========================================================================
+   REJESTRACJA
+   ========================================================================= */
+function showRegisterError(msg){
+  registerError.textContent = msg;
+  registerError.hidden = false;
+}
+function clearRegisterError(){
+  registerError.hidden = true;
+  registerError.textContent = '';
+}
+
+registerForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = nameInput.value.trim();
+  const klass = classInput.value.trim();
+  if(!name || !klass){
+    showRegisterError('Podaj imię, nazwisko i klasę, żeby zagrać.');
+    return;
+  }
+  const key = normalizeKey(name, klass);
+  const prev = loadAttempts().find(a => a.key === key);
+  if(prev){
+    showRegisterError(`Te dane już brały udział w quizie (wynik: ${prev.correct}/${prev.total}, czas: ${formatTime(prev.timeMs)}). Każda osoba gra tylko raz!`);
+    return;
+  }
+  clearRegisterError();
+  currentPlayer = { name, klass, key };
+  startQuiz();
+});
+
+btnBackStart.addEventListener('click', () => {
+  clearRegisterError();
+  registerForm.reset();
+  showView('start');
+});
+
+/* =========================================================================
+   LOGIKA QUIZU
+   ========================================================================= */
+let currentPlayer = null;
+let quizRounds = [];
+let roundIndex = 0;
+let correctCount = 0;
+let answerLog = [];
+let locked = false;
+let quizStartTime = 0;
+let timerIntervalId = null;
+let snippetTimeout = null;
+
+function groupByLang(){
+  const byLang = {};
+  SONG_BANK.forEach(s => {
+    byLang[s.lang] = byLang[s.lang] || [];
+    byLang[s.lang].push(s);
+  });
+  return byLang;
+}
+function pickQuizSongs(){
+  const byLang = groupByLang();
+  const allLangs = Object.keys(byLang);
+  const roundsCount = Math.min(CONFIG.totalRounds, allLangs.length);
+  const languages = shuffle(allLangs).slice(0, roundsCount);
+  return languages.map(lang => {
+    const opts = byLang[lang];
+    return opts[Math.floor(Math.random()*opts.length)];
+  });
+}
+function generateOptions(correctLang){
+  const allLangs = [...new Set(SONG_BANK.map(s => s.lang))];
+  const numOptions = Math.min(CONFIG.numOptions, allLangs.length);
+  const distractors = shuffle(allLangs.filter(l => l !== correctLang)).slice(0, numOptions - 1);
+  return shuffle([correctLang, ...distractors]);
+}
+
+function startQuiz(){
+  quizRounds = pickQuizSongs().map(song => ({ song, options: generateOptions(song.lang) }));
+  roundIndex = 0;
+  correctCount = 0;
+  answerLog = [];
+  quizStartTime = performance.now();
+  showView('quiz');
+  startTimerLoop();
+  renderRound();
+}
+
+function renderRound(){
+  const total = quizRounds.length;
+  roundLabel.textContent = `Pytanie ${roundIndex+1} z ${total}`;
+  playLabel.textContent = 'Odtwórz jeszcze raz';
+  
+  optionsWrap.innerHTML = '';
+  const round = quizRounds[roundIndex];
+  round.options.forEach(lang => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'option-btn';
+    btn.textContent = lang;
+    btn.addEventListener('click', () => selectAnswer(lang));
+    optionsWrap.appendChild(btn);
+  });
+  locked = false;
+  playSnippet(round.song);
+}
+
+btnPlaySnippet.addEventListener('click', () => {
+  playSnippet(quizRounds[roundIndex].song);
+  playLabel.textContent = 'Odtwórz jeszcze raz';
+});
+
+function playSnippet(song){
+  clearTimeout(snippetTimeout);
+  player.pause();
+  player.src = song.file;
+  player.onloadedmetadata = () => {
+    let start = 0;
+    const dur = player.duration;
+    if(typeof song.start === 'number'){
+      start = song.start;
+    }else if(isFinite(dur) && dur > CONFIG.snippetSeconds + 6){
+      const safeMax = dur - CONFIG.snippetSeconds - 3;
+      start = safeMax * (0.1 + Math.random()*0.5);
+    }
+    try{ player.currentTime = start; }catch(e){}
+    player.play().then(() => {
+      snippetTimeout = setTimeout(() => player.pause(), CONFIG.snippetSeconds*1000);
+    }).catch(() => {
+      showToast('Nie udało się odtworzyć fragmentu (' + song.file + ').');
+    });
+  };
+  player.onerror = () => {
+    showToast('Brak pliku audio: ' + song.file + '. Dodaj go do folderu audio/.');
+  };
+  player.load();
+}
+
+function selectAnswer(lang){
+  if(locked) return;
+  locked = true;
+  const round = quizRounds[roundIndex];
+  const isCorrect = lang === round.song.lang;
+  if(isCorrect) correctCount++;
+  answerLog.push({ lang: round.song.lang, chosen: lang, correct: isCorrect });
+  [...optionsWrap.children].forEach(btn => {
+    btn.disabled = true;
+    if(btn.textContent === round.song.lang) btn.classList.add('is-correct');
+    else if(btn.textContent === lang && !isCorrect) btn.classList.add('is-wrong');
+  });
+  player.pause();
+  setTimeout(() => {
+    roundIndex++;
+    if(roundIndex < quizRounds.length){
+      renderRound();
+    }else{
+      finishQuiz();
+    }
+  }, 1100);
+}
+
+function startTimerLoop(){
+  clearInterval(timerIntervalId);
+  timerIntervalId = setInterval(() => {
+    timerDisplay.textContent = formatTime(performance.now() - quizStartTime);
+  }, 100);
+}
+function stopTimerLoop(){ clearInterval(timerIntervalId); }
+
+/* =========================================================================
+   WYNIK
+   ========================================================================= */
+let autoReturnInterval = null;
+
+function finishQuiz(){
+  stopTimerLoop();
+  const timeMs = performance.now() - quizStartTime;
+  const record = {
+    name: currentPlayer.name,
+    klass: currentPlayer.klass,
+    key: currentPlayer.key,
+    correct: correctCount,
+    total: quizRounds.length,
+    timeMs,
+    timestamp: Date.now(),
+  };
+  saveAttempt(record);
+  renderResult(record);
+  showView('result');
+  scheduleAutoReturn();
+}
+
+function renderResult(record){
+  resultScore.textContent = `${record.correct} / ${record.total}`;
+  resultTime.textContent = `Twój czas: ${formatTime(record.timeMs)}`;
+
+  if(record.correct === record.total){
+    const board = getLeaderboard();
+    const rank = board.findIndex(r => r.timestamp === record.timestamp);
+    if(rank > -1){
+      resultMessage.textContent = `Brawo! Na razie jesteś na ${rank+1}. miejscu w rankingu. Zwycięzców ogłosimy na koniec dnia.`;
+    }else{
+      resultMessage.textContent = 'Komplet punktów! Na razie 5 szybszych osób już Cię wyprzedziło — dziękujemy za grę.';
+    }
+    launchConfetti();
+  }else{
+    resultMessage.textContent = 'Dziękujemy za udział! Nie wszystkie odpowiedzi były poprawne — spróbuj przy następnej okazji.';
+  }
+  renderLeaderboardInto(lbResult, record.timestamp);
+}
+
+function scheduleAutoReturn(){
+  let remaining = CONFIG.autoReturnSeconds;
+  autoReturnNote.textContent = `Za ${remaining} s wracamy do ekranu startowego.`;
+  clearInterval(autoReturnInterval);
+  autoReturnInterval = setInterval(() => {
+    remaining--;
+    if(remaining <= 0){
+      clearInterval(autoReturnInterval);
+      resetToStart();
+    }else{
+      autoReturnNote.textContent = `Za ${remaining} s wracamy do ekranu startowego.`;
+    }
+  }, 1000);
+}
+function resetToStart(){
+  clearInterval(autoReturnInterval);
+  currentPlayer = null;
+  registerForm.reset();
+  clearRegisterError();
+  renderLeaderboardInto(lbStart);
+  showView('start');
+}
+btnFinish.addEventListener('click', resetToStart);
+
+function launchConfetti(){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#FFB627','#2FB8AC','#FF5D5D','#F3EFE6'];
+  for(let i=0;i<26;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.background = colors[i % colors.length];
+    const duration = 2.4 + Math.random()*1.6;
+    el.style.animationDuration = duration + 's';
+    el.style.animationDelay = (Math.random()*0.4) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), (duration+0.5)*1000);
+  }
+}
+
+/* =========================================================================
+   START — przycisk "Zagraj"
+   ========================================================================= */
+btnPlay.addEventListener('click', () => {
+  nameInput.value = '';
+  classInput.value = '';
+  clearRegisterError();
+  showView('register');
+  setTimeout(() => nameInput.focus(), 50);
+});
+
+/* =========================================================================
+   TOAST
+   ========================================================================= */
+let toastTimer = null;
+function showToast(msg, isError=true){
+  toast.textContent = msg;
+  toast.classList.toggle('is-error', isError);
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 4500);
+}
+
+/* =========================================================================
+   PANEL ORGANIZATORA
+   ========================================================================= */
+adminGear.addEventListener('click', () => {
+  pinInput.value = '';
+  pinError.hidden = true;
+  pinModal.hidden = false;
+  setTimeout(() => pinInput.focus(), 50);
+});
+btnCancelPin.addEventListener('click', () => { pinModal.hidden = true; });
+
+pinForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if(pinInput.value === CONFIG.adminPin){
+    pinModal.hidden = true;
+    openAdminPanel();
+  }else{
+    pinError.hidden = false;
+  }
+});
+
+function openAdminPanel(){
+  const all = loadAttempts().slice().sort((a,b) => a.timeMs - b.timeMs);
+  const perfect = all.filter(a => a.correct === a.total).length;
+  adminSummary.textContent = `Łącznie podejść: ${all.length}, komplet punktów: ${perfect}`;
+  adminTableBody.innerHTML = '';
+  all.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${escapeHtml(r.name)}</td>` +
+      `<td>${escapeHtml(r.klass)}</td>` +
+      `<td>${r.correct}/${r.total}</td>` +
+      `<td>${formatTime(r.timeMs)}</td>` +
+      `<td>${escapeHtml(new Date(r.timestamp).toLocaleString('pl-PL'))}</td>`;
+    adminTableBody.appendChild(tr);
+  });
+  adminModal.hidden = false;
+}
+btnCloseAdmin.addEventListener('click', () => { adminModal.hidden = true; });
+
+btnExportCsv.addEventListener('click', () => {
+  const rows = loadAttempts().slice().sort((a,b) => a.timestamp - b.timestamp);
+  const header = ['Imię i nazwisko','Klasa','Poprawne','Na ile pytań','Czas (s)','Data i godzina'].join(';');
+  const lines = rows.map(r => {
+    const czas = (r.timeMs/1000).toFixed(2).replace('.', ',');
+    const data = new Date(r.timestamp).toLocaleString('pl-PL');
+    return [csvSafe(r.name), csvSafe(r.klass), r.correct, r.total, czas, csvSafe(data)].join(';');
+  });
+  const csvContent = '\uFEFF' + [header, ...lines].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wyniki_quizu_jezykowego.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+btnClearData.addEventListener('click', () => {
+  if(confirm('Na pewno usunąć WSZYSTKIE zapisane wyniki? Tej operacji nie można odwrócić.')){
+    try{ localStorage.removeItem(CONFIG.storageKey); }catch(e){}
+    openAdminPanel();
+    renderLeaderboardInto(lbStart);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    pinModal.hidden = true;
+    adminModal.hidden = true;
+  }
+});
+
+/* =========================================================================
+   INICJALIZACJA
+   ========================================================================= */
+if(!storageOK) storageWarning.hidden = false;
+renderLeaderboardInto(lbStart);
+showView('start');
+</script>
 </body>
-
 </html>
