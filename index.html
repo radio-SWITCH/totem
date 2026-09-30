@@ -192,8 +192,85 @@
 
 
 
+                <article class="panel panel--space reveal" style="--d:480ms">
+                    <h2>🔭 Kosmiczny Kalendarz</h2>
+                    <p id="apodHeading">Sprawdź, co NASA sfotografowała w dniu Twoich urodzin.</p>
+                    <div class="apod-controls">
+                        <label>Twoje urodziny:</label>
+                        <select id="apodDay" aria-label="Dzień"></select>
+                        <select id="apodMonth" aria-label="Miesiąc"></select>
+                        <select id="apodYear" aria-label="Rok"></select>
+                        <button class="btn btn--ghost" id="apodRandom" type="button">🎲 Losuj</button>
+                    </div>
+                    <div class="apod-frame">
+                        <img id="apodImg" src="" alt="" hidden>
+                        <div class="apod-status" id="apodStatus">Łączę się z NASA…</div>
+                    </div>
+                    <div class="apod-caption">
+                        <strong id="apodTitle"></strong>
+                        <span id="apodMeta"></span>
+                    </div>
+                    <small class="src">Źródło: <a href="https://api.nasa.gov" target="_blank" rel="noopener noreferrer">NASA APOD</a></small>
+                </article>
+
+                <article class="panel panel--art reveal" style="--d:500ms">
+                    <h2>🖼️ Quiz: zgadnij obraz</h2>
+                    <div class="quiz-box">
+                        <div class="art-frame">
+                            <img id="metImg" src="" alt="" hidden>
+                            <div class="apod-status" id="metStatus">Losuję obraz…</div>
+                        </div>
+                        <p id="metQuestion"></p>
+                        <div class="quiz-opts" id="metOpts"></div>
+                        <div class="quiz-expl" id="metExpl"></div>
+                        <button class="btn btn--ghost" id="metNext" type="button">➡️ Następny obraz</button>
+                        <div class="quiz-meta" id="metMeta"></div>
+                    </div>
+                    <small class="src">Źródło: <a href="https://metmuseum.github.io" target="_blank" rel="noopener noreferrer">The Met Open Access</a> (domena publiczna)</small>
+                </article>
+
+                <article class="panel panel--library reveal" style="--d:520ms">
+                    <h2>📚 Bosoteka</h2>
+                    <div class="lib-grid">
+                        <div>
+                            <p class="lib-hint">Szkolna biblioteka i czytelnia to miejsce na lekturę, naukę i spokojną chwilę między lekcjami. Nowości, ogłoszenia i informacje o godzinach otwarcia znajdziesz na naszym profilu:</p>
+                            <p><a href="https://www.facebook.com/p/Biblioteka-i-czytelnia-ZSI-100090840606346/" target="_blank" rel="noopener noreferrer">Biblioteka i czytelnia ZSI na Facebooku</a></p>
+                        </div>
+                        <div class="lib-pick" id="libPick">
+                            <div class="lib-cover" id="libCover" aria-hidden="true">📖</div>
+                            <div class="lib-pick-text">
+                                <small>Książka dnia z Open Library</small>
+                                <strong id="libTitle">Wczytywanie…</strong>
+                                <span id="libAuthor"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="euro" id="euroCard">
+                        <div class="euro-img">
+                            <img id="euroImg" src="" alt="" hidden>
+                            <div class="apod-status" id="euroStatus">Otwieram archiwum Europy…</div>
+                        </div>
+                        <div class="euro-text">
+                            <small>🏛️ Wehikuł czasu — skarby z polskich zbiorów cyfrowych</small>
+                            <strong id="euroTitle"></strong>
+                            <span id="euroMeta"></span>
+                            <span class="euro-ago" id="euroAgo"></span>
+                            <a id="euroLink" class="lib-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Zobacz w Europeanie</a>
+                            <button class="btn btn--ghost" id="euroNext" type="button">🎲 Inny skarb</button>
+                        </div>
+                    </div>
+                    <small class="src">Źródła: <a href="https://openlibrary.org/developers/api" target="_blank" rel="noopener noreferrer">Open Library</a> · <a href="https://www.europeana.eu" target="_blank" rel="noopener noreferrer">Europeana</a></small>
+                </article>
+
+                <article class="panel panel--core reveal" style="--d:510ms">
+                    <h2>🔬 Świat nauki</h2>
+                    <p class="lib-hint" id="coreTopic">Praca naukowa z otwartym dostępem</p>
+                    <div class="core-article" id="coreList">Wczytywanie…</div>
+                    <small class="src">Źródło: <a href="https://core.ac.uk/" target="_blank" rel="noopener noreferrer">CORE</a></small>
+                </article>
+
                 <article class="panel panel--good reveal" style="--d:500ms">
-                    <h2>Dobre wiadomości</h2>
+                    <h2>🌟 Dobre wiadomości</h2>
                     <ul class="news-list" id="goodList"><li>Wczytywanie…</li></ul>
                     <small class="src">Źródło: <a href="https://dobrewiadomosci.net.pl/" target="_blank" rel="noopener noreferrer">dobrewiadomosci.net.pl</a></small>
                 </article>
@@ -235,7 +312,7 @@
     <footer>
         <p>© 2026 Zespół Szkół Informatycznych w Kielcach | Technikum nr 7<br>
             TecMaschin Administrator: <b><a href="https://www.linkedin.com/in/aleksander-pabian" target="_blank" rel="noopener noreferrer">A. Pabian</a></b></p>
-        <small>Pogoda: <a href="https://www.weatherapi.com/" target="_blank" rel="noopener noreferrer">WeatherAPI.com</a> · Powietrze i prognoza: Open-Meteo · Kursy: NBP · Dobre wiadomości: dobrewiadomosci.net.pl · Historia: Wikipedia · ISS: wheretheiss.at · GitHub</small>
+        <small>WeatherAPI.com· Open-Meteo · NBP · Dobrewiadomosci.net.pl · Wikipedia · Open Library · Wheretheiss.at · NASA APOD · GitHub · The Met Open Access · CORE · Europeana</small>
     </footer>
 
     <!-- Tryb nocny: czarny ekran z analogowym zegarem (po lekcjach) -->

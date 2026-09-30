@@ -463,3 +463,118 @@ html.totem .panel--gh .kv-list { width: 80%; margin-left: auto; margin-right: au
 /* galeria: trzy zdjęcia w rzędzie */
 html.totem .gallery-grid { grid-template-columns: repeat(3, 1fr); }
 html.totem .gallery-grid img { height: 150px; }
+
+/* --- v5.3: Kosmiczny Kalendarz (NASA), quiz sztuki (Met), biblioteka --- */
+.panel--space, .panel--art { grid-column: span 3; }
+.panel--library { grid-column: span 6; }
+.apod-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0 12px; }
+.apod-controls label { font-size: 13px; color: var(--muted); }
+.apod-controls input[type="date"] {
+    background: var(--panel-2); color: var(--paper); border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm); padding: 8px 10px; font: 500 14px var(--f-mono); color-scheme: dark;
+}
+.apod-frame, .art-frame {
+    position: relative; min-height: 220px; display: grid; place-items: center; overflow: hidden;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-md);
+}
+.apod-frame img, .art-frame img { width: 100%; max-height: 340px; object-fit: contain; display: block; }
+.art-frame { margin-bottom: 12px; }
+.apod-status { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; color: var(--muted); font-size: 14px; }
+.apod-status[hidden], .apod-frame img[hidden], .art-frame img[hidden] { display: none; }
+.apod-caption { margin: 10px 0 6px; display: flex; flex-direction: column; gap: 2px; }
+.apod-caption strong { font-family: var(--f-display); font-size: 15px; }
+.apod-caption span { font-size: 12.5px; color: var(--muted); font-family: var(--f-mono); }
+.lib-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: center; }
+.lib-hint { color: var(--warn) !important; }
+.lib-pick { display: flex; gap: 14px; align-items: center; padding: 14px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-md); }
+.lib-cover { flex: 0 0 auto; width: 84px; min-height: 120px; display: grid; place-items: center; font-size: 34px; background: var(--panel); border-radius: var(--r-sm); overflow: hidden; }
+.lib-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lib-pick-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lib-pick-text small { color: var(--muted); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
+.lib-pick-text strong { font-family: var(--f-display); font-size: 15.5px; overflow-wrap: anywhere; }
+.lib-pick-text span { color: var(--ink-text); font-size: 13px; }
+.lib-link { font-size: 12.5px; }
+@media (max-width: 980px) {
+    .panel--space, .panel--art { grid-column: span 2; }
+    .lib-grid { grid-template-columns: 1fr; }
+}
+html.totem .panel--space, html.totem .panel--art, html.totem .panel--library { grid-column: span 2 !important; }
+html.totem .apod-controls { justify-content: center; }
+/* totem jest dotykowy — przyciski zostają (ogólna reguła chowa .btn--ghost), cele dotyku powiększone */
+html.totem #apodRandom, html.totem #metNext { display: inline-block; min-height: 44px; }
+.apod-controls select {
+    background: var(--panel-2); color: var(--paper); border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm); padding: 8px 10px; font: 500 14px var(--f-mono); color-scheme: dark;
+}
+html.totem .apod-controls select { min-height: 44px; font-size: 15px; }
+#metNext { margin-top: 4px; }
+html.totem .lib-grid { grid-template-columns: 1fr; justify-items: center; }
+html.totem .lib-pick { text-align: left; }
+
+
+/* --- v6.0: Kosmiczny Kalendarz, quiz sztuki, Bosoteka + Europeana, Świat nauki (brakujące style) --- */
+.panel--space, .panel--art, .panel--library, .panel--core { grid-column: span 3; }
+@media (max-width: 980px) { .panel--space, .panel--art, .panel--library, .panel--core { grid-column: span 1; } }
+.apod-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+.apod-controls label { font-size: 13px; color: var(--muted); }
+.apod-controls select {
+    background: var(--panel-2); color: var(--paper); border: 1px solid var(--line-strong);
+    border-radius: 999px; padding: 8px 12px; font: inherit; font-size: 13.5px;
+}
+.apod-frame, .art-frame, .euro-img {
+    position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    min-height: 220px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-md);
+}
+.apod-frame img, .art-frame img, .euro-img img { display: block; width: 100%; max-height: 340px; object-fit: contain; }
+.apod-frame img[hidden], .art-frame img[hidden], .euro-img img[hidden] { display: none; }
+.apod-status { padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
+.apod-status[hidden] { display: none; }
+.apod-caption { display: flex; flex-direction: column; gap: 3px; margin: 10px 0 6px; font-size: 13.5px; }
+.apod-caption strong { font-family: var(--f-display); color: var(--paper); }
+.apod-caption span { color: var(--muted); font-size: 12.5px; }
+.lib-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 8px; }
+.lib-hint { color: var(--muted); font-size: 13.5px; }
+.lib-pick { display: flex; gap: 14px; align-items: center; padding: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-md); }
+.lib-cover { flex: 0 0 64px; height: 92px; display: flex; align-items: center; justify-content: center; font-size: 30px; border-radius: 8px; overflow: hidden; background: var(--signal-dim); }
+.lib-cover img { width: 100%; height: 100%; object-fit: cover; }
+.lib-pick-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lib-pick-text small, .euro-text small { color: var(--warn); font-family: var(--f-mono); font-size: 11.5px; }
+.lib-pick-text span, .euro-text span { color: var(--muted); font-size: 12.5px; }
+.lib-link { font-size: 13px; }
+.euro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin: 14px 0 8px; align-items: center; }
+.euro-img { min-height: 180px; }
+.euro-text { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.euro-text strong { font-family: var(--f-display); font-size: 15px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.euro-ago { color: var(--live) !important; font-family: var(--f-mono); font-size: 13px !important; }
+@media (max-width: 620px) { .euro { grid-template-columns: 1fr; } }
+html.totem .euro { grid-template-columns: 1fr; }
+html.totem .euro-text, html.totem .lib-pick { align-items: center; text-align: center; }
+html.totem .lib-pick { flex-direction: column; }
+
+
+/* ---- Świat nauki: jeden cały artykuł — karta wyśrodkowana, tekst abstraktu wyrównany do lewej ---- */
+.core-article { margin-top: 14px; }
+.core-card {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    width: 100%; max-width: 640px; margin: 0 auto; padding: 22px 24px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-md);
+}
+.core-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.core-tag {
+    font-family: var(--f-mono); font-size: 12px; color: var(--muted);
+    padding: 4px 11px; border: 1px solid var(--line-strong); border-radius: 999px;
+}
+.core-tag--year { color: var(--warn); background: var(--warn-dim); border-color: transparent; }
+.core-title { margin: 0; text-align: center; font-family: var(--f-display); font-weight: 600; font-size: 21px; line-height: 1.3; }
+.core-title a { color: var(--paper); text-decoration: none; }
+.core-authors { text-align: center; font-size: 14px; color: var(--muted); }
+.core-divider { width: 56px; height: 3px; border-radius: 3px; background: var(--signal); margin: 4px 0; }
+.core-label { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--signal); }
+.core-abstract { margin: 0; width: 100%; text-align: left; font-size: 15.5px; line-height: 1.65; color: var(--paper); opacity: .92; hyphens: auto; }
+.core-link {
+    margin-top: 6px; padding: 9px 20px; font-size: 14px; font-weight: 500; text-decoration: none;
+    color: var(--paper); background: var(--signal-dim); border: 1px solid var(--signal); border-radius: 999px;
+}
+html.totem .panel--core { grid-column: span 2 !important; }
+html.totem .core-card { max-width: none; padding: 24px 22px; }
+html.totem .core-abstract { text-align: left; }

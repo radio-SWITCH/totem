@@ -1377,6 +1377,465 @@ async function loadGood() {
 loadGood();
 setInterval(loadGood, 15 * 60 * 1000);
 
+/* ======================= Kosmiczny Kalendarz (NASA APOD) ======================= */
+// Klucz z api.nasa.gov (limit 1000 zapytań/h). Uwaga: klucz w kodzie front-endu jest widoczny dla każdego, kto otworzy stronę.
+const NASA_KEY = 'M8BUGBOUn3rRkYmv69ESAgsGngFdg6YNWxvNLwgk';
+(function kosmicznyKalendarz() {
+    const selD = document.getElementById('apodDay');
+    const selM = document.getElementById('apodMonth');
+    const selY = document.getElementById('apodYear');
+    if (!selD) return;
+    const img = document.getElementById('apodImg');
+    const status = document.getElementById('apodStatus');
+    const titleEl = document.getElementById('apodTitle');
+    const metaEl = document.getElementById('apodMeta');
+    const headEl = document.getElementById('apodHeading');
+    const pad = n => String(n).padStart(2, '0');
+    const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const plDate = s => { const [y, m, d] = s.split('-').map(Number); return `${d} ${miesiace[m - 1]} ${y}`; };
+    const APOD_START = '1995-06-16';               // pierwszy dzień archiwum APOD
+    const today = new Date();
+    // Trzy listy zamiast natywnego pola daty — na ekranie dotykowym bez klawiatury są wygodniejsze
+    const MIES_NAZ = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień'];
+    const fillSel = (sel, placeholder, items) => {
+        sel.innerHTML = '';
+        sel.append(new Option(placeholder, ''));
+        items.forEach(([v, t]) => sel.append(new Option(t, v)));
+    };
+    fillSel(selD, 'Dzień', Array.from({ length: 31 }, (_, i) => [i + 1, String(i + 1)]));
+    fillSel(selM, 'Miesiąc', MIES_NAZ.map((t, i) => [i + 1, t]));
+    fillSel(selY, 'Rok', Array.from({ length: today.getFullYear() - 1995 + 1 }, (_, i) => [today.getFullYear() - i, String(today.getFullYear() - i)]));
+
+    const cache = new Map();
+    let reqId = 0, userUntil = 0, limitUntil = 0;
+
+    // Pojedyncze zapytanie z limitem czasu (APOD bywa bardzo wolny lub pada z błędem 5xx)
+    async function getJson(url, ms = 12000) {
+        const ctl = new AbortController();
+        const t = setTimeout(() => ctl.abort(), ms);
+        try { return await fetch(url, { signal: ctl.signal }); } finally { clearTimeout(t); }
+    }
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // 1) APOD: własny klucz, DEMO_KEY tylko gdy klucz odrzucony/limit. Krótki timeout — awaria NASA nie blokuje panelu.
+    async function fetchApod(date) {
+        if (cache.has(date)) return cache.get(date);
+        let last = 'brak odpowiedzi';
+        for (const key of [...new Set([NASA_KEY, 'DEMO_KEY'])]) {
+            try {
+                const r = await getJson(`https://api.nasa.gov/planetary/apod?api_key=${key}&date=${date}&thumbs=true`, 8000);
+                if (r.ok) { const j = await r.json(); cache.set(date, j); return j; }
+                last = 'HTTP ' + r.status;
+                if (r.status !== 403 && r.status !== 429) break;   // 400/5xx — inny klucz nie pomoże, od razu zapas
+            } catch (e) {
+                last = e.name === 'AbortError' ? 'timeout' : 'błąd sieci/CORS';
+                break;
+            }
+        }
+        throw new Error(last);
+    }
+
+    // 2) Zapas: NASA Image and Video Library (bez klucza) — do 4 różnych tematów w danym roku, żeby pusty wynik nie kończył się błędem.
+    async function fetchLibrary(date) {
+        const y = +date.slice(0, 4);
+        const topics = ['galaxy', 'nebula', 'planet', 'moon', 'mars', 'hubble', 'astronaut', 'comet', 'saturn', 'star', 'earth', 'rocket'];
+        let last = 'pusto';
+        for (const q of topics.sort(() => Math.random() - .5).slice(0, 4)) {
+            try {
+                const r = await getJson(`https://images-api.nasa.gov/search?q=${q}&media_type=image&year_start=${y}&year_end=${y}`, 9000);
+                if (!r.ok) { last = 'HTTP ' + r.status; continue; }
+                const items = ((await r.json()).collection || {}).items || [];
+                const ok = items.filter(i => i.links && i.links[0] && i.data && i.data[0]);
+                if (!ok.length) continue;
+                const it = ok[Math.floor(Math.random() * Math.min(ok.length, 40))];
+                const thumb = it.links[0].href.replace(/^http:/, 'https:');
+                return {
+                    media_type: 'image', url: thumb.replace('~thumb.', '~medium.'), url2: thumb, title: it.data[0].title,
+                    copyright: '', fallback: true, year: y,
+                    nasaDate: String(it.data[0].date_created || '').slice(0, 10)
+                };
+            } catch (e) { last = e.name === 'AbortError' ? 'timeout' : 'błąd sieci'; }
+        }
+        throw new Error(last);
+    }
+
+    async function show(date, heading) {
+        const id = ++reqId;
+        status.hidden = false; status.textContent = 'Łączę się z NASA…';
+        let d, reason = '';
+        try {
+            d = await fetchApod(date);
+        } catch (e) {
+            reason = e.message;
+            console.warn('APOD niedostępny (' + reason + '), używam NASA Image Library');
+            try { d = await fetchLibrary(date); }
+            catch (e2) {
+                if (id !== reqId) return;
+                console.error('NASA:', e, e2);
+                img.hidden = true; status.hidden = false;
+                status.textContent = `Brak danych z NASA 😕 (APOD: ${reason}; archiwum: ${e2.message})`;
+                limitUntil = Date.now() + 2 * 60 * 1000;      // nie męczymy serwera przez 2 minuty
+                return;
+            }
+        }
+        if (id !== reqId) return;
+        const src = String(d.media_type === 'image' ? (d.url || '') : (d.thumbnail_url || '')).replace(/^http:\/\//, 'https://');  // stare wpisy APOD mają http:// — przeglądarka blokuje je na https
+        headEl.textContent = d.fallback ? `Kosmos w roku ${d.year} (archiwum NASA)` : heading;
+        titleEl.textContent = d.title || '';
+        metaEl.textContent = d.fallback
+            ? `${d.nasaDate ? plDate(d.nasaDate) : d.year} · zdjęcie z archiwum NASA (Zdjęcie Dnia chwilowo niedostępne)`
+            : `${plDate(date)}${d.copyright ? ' · © ' + String(d.copyright).replace(/\s+/g, ' ').trim() : ''}${d.media_type === 'video' ? ' · wideo (miniatura)' : ''}`;
+        if (!src) { img.hidden = true; status.textContent = 'Tego dnia NASA pokazała wideo bez miniatury 🎬'; return; }
+        img.onload = () => { if (id === reqId) { img.hidden = false; status.hidden = true; } };
+        img.onerror = () => { if (id === reqId && d.url2 && img.src !== d.url2) { img.src = d.url2; return; } if (id === reqId) { img.hidden = true; status.hidden = false; status.textContent = 'Nie udało się wczytać zdjęcia 😕'; } };
+        img.alt = d.title || 'Zdjęcie dnia NASA';
+        img.src = src;
+    }
+
+    // Tryb automatyczny (totem bez dotyku): „Dziś w kosmosie” — dzisiejszy dzień i miesiąc w losowym roku z archiwum.
+    function auto() {
+        if (Date.now() < userUntil || Date.now() < limitUntil || document.documentElement.classList.contains('night-on')) return;
+        const y = 1996 + Math.floor(Math.random() * (today.getFullYear() - 1996));
+        let m = today.getMonth() + 1, d = today.getDate();
+        if (m === 2 && d === 29) d = 28;
+        show(`${y}-${pad(m)}-${pad(d)}`, `Dziś w kosmosie — ${d} ${miesiace[m - 1]} ${y}`);
+    }
+    function userPick(value, heading) {
+        userUntil = Date.now() + 60 * 1000;           // po ręcznym wyborze automat czeka minutę
+        show(value, heading);
+    }
+    function warn(msg) { ++reqId; img.hidden = true; status.hidden = false; status.textContent = msg; }
+    function fromSelects() {
+        const d = +selD.value, m = +selM.value, y = +selY.value;
+        if (!d || !m || !y) return;                      // czekamy, aż wybrane będą wszystkie trzy
+        if (new Date(y, m - 1, d).getMonth() !== m - 1) return warn('Taki dzień nie istnieje — sprawdź datę 🙂');
+        const s = `${y}-${pad(m)}-${pad(d)}`;
+        if (s < APOD_START) return warn('Archiwum NASA zaczyna się 16 czerwca 1995.');
+        if (s > iso(today)) return warn('Ta data jeszcze nie nadeszła 🚀');
+        userPick(s, 'Tak wyglądał kosmos w dniu Twoich urodzin:');
+    }
+    [selD, selM, selY].forEach(el => el.addEventListener('change', fromSelects));
+    document.getElementById('apodRandom').addEventListener('click', () => {
+        const a = new Date(APOD_START).getTime(), b = today.getTime();
+        const d = new Date(a + Math.random() * (b - a));
+        userPick(iso(d), 'Losowy dzień w kosmosie:');
+        selD.value = selM.value = selY.value = '';
+    });
+    auto();
+    setInterval(auto, 40 * 1000);
+})();
+
+/* ======================= Nauka: prace naukowe z CORE (core.ac.uk) ======================= */
+// Uwaga: klucz w kodzie front-endu jest widoczny dla każdego, kto otworzy stronę.
+const CORE_KEY = 'XManEdWR4m9iA2fzg0kY8DTJevCbxH6B';
+async function loadCore() {
+    const box = document.getElementById('coreList');
+    if (!box) return;
+    const now = new Date();
+    const topics = ['cybersecurity', 'machine learning', 'computer networks', 'web development', 'database systems',
+        'operating systems', 'artificial intelligence education', 'programming education', 'cloud computing', 'internet of things'];
+    const day = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
+    const topic = topics[day % topics.length];
+    const clean = s => String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const timed = async (url, opt = {}) => {
+        const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+        try { return await fetch(url, { ...opt, signal: ctl.signal }); } finally { clearTimeout(t); }
+    };
+
+    // 1) CORE v3. Adres MUSI kończyć się ukośnikiem: bez niego serwer robi przekierowanie 301, a przeglądarka blokuje je (CORS).
+    async function fromCore() {
+        const call = async q => {
+            const base = `https://api.core.ac.uk/v3/search/works/?q=${encodeURIComponent(q)}&limit=12`;
+            let r = null, err = '';
+            try { r = await timed(`${base}&api_key=${encodeURIComponent(CORE_KEY)}`); } catch (e) { err = e.name === 'AbortError' ? 'timeout' : 'sieć/CORS'; }
+            if (!r || !r.ok) {                                   // zapas: klucz w nagłówku
+                try { r = await timed(base, { headers: { Authorization: 'Bearer ' + CORE_KEY } }); }
+                catch (e) { throw new Error(err || (e.name === 'AbortError' ? 'timeout' : 'sieć/CORS')); }
+            }
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return ((await r.json()).results || []).filter(w => w.title);
+        };
+        let res = await call(`title:"${topic}" AND yearPublished>=${now.getFullYear() - 2}`);
+        if (res.length < 2) res = await call(`"${topic}"`);
+        res.sort((x, y) => String(y.publishedDate || y.yearPublished || '').localeCompare(String(x.publishedDate || x.yearPublished || '')));
+        return res.map(w => ({
+            title: clean(w.title),
+            abstract: clean(w.abstract),
+            authors: (w.authors || []).map(a => a.name).filter(Boolean).slice(0, 4).join(', '),
+            year: w.yearPublished || '',
+            venue: clean((w.journals && w.journals[0] && w.journals[0].title) || w.publisher || ''),
+            link: `https://core.ac.uk/works/${w.id}`
+        }));
+    }
+
+    // 2) Zapas: OpenAlex (też otwarty dostęp, bez klucza, działa z przeglądarki) — panel nie zostaje pusty, gdy CORE pada.
+    async function fromOpenAlex() {
+        const from = `${now.getFullYear() - 2}-01-01`;
+        const r = await timed(`https://api.openalex.org/works?search=${encodeURIComponent(topic)}&filter=is_oa:true,from_publication_date:${from}` +
+            `&sort=publication_date:desc&per-page=12&select=id,title,publication_year,authorships,doi,primary_location,abstract_inverted_index`);
+        if (!r.ok) throw new Error('OpenAlex HTTP ' + r.status);
+        // OpenAlex zwraca abstrakt jako indeks odwrócony (słowo → pozycje) — składamy go z powrotem w tekst
+        const rebuild = idx => {
+            if (!idx) return '';
+            const words = [];
+            for (const [w, pos] of Object.entries(idx)) pos.forEach(p => { words[p] = w; });
+            return words.filter(Boolean).join(' ');
+        };
+        return ((await r.json()).results || []).filter(w => w.title).map(w => ({
+            title: clean(w.title),
+            abstract: clean(rebuild(w.abstract_inverted_index)),
+            authors: (w.authorships || []).map(a => a.author && a.author.display_name).filter(Boolean).slice(0, 4).join(', '),
+            year: w.publication_year || '',
+            venue: clean((w.primary_location && w.primary_location.source && w.primary_location.source.display_name) || ''),
+            link: (w.primary_location && w.primary_location.landing_page_url) || w.doi || w.id
+        }));
+    }
+
+    // Wybieramy JEDEN artykuł: najlepiej z pełnym abstraktem (≥ 200 znaków). Przy każdym odświeżeniu (co 6 h) kolejny z listy.
+    const pickOne = list => {
+        const full = list.filter(a => a.abstract.length >= 200);
+        const pool = full.length ? full : list.filter(a => a.abstract);
+        if (!pool.length) return null;
+        return pool[Math.floor(now.getTime() / (6 * 3600e3)) % pool.length];
+    };
+
+    let art = null, why = '', via = 'CORE';
+    try { art = pickOne(await fromCore()); } catch (e) { why = e.message; console.warn('CORE:', e); }
+    if (!art) {
+        try { art = pickOne(await fromOpenAlex()); via = 'OpenAlex'; } catch (e) { console.error('OpenAlex:', e); why += ' / ' + e.message; }
+    }
+    if (!art) { box.textContent = `Brak danych 😕 (${why || 'pusto'})`; return; }
+
+    document.getElementById('coreTopic').textContent = `Temat dnia: ${topic}` + (via === 'OpenAlex' ? ' · źródło zapasowe: OpenAlex' : '');
+    box.textContent = '';
+    const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt) n.textContent = txt; return n; };
+    const card = el('div', 'core-card');
+    const tags = el('div', 'core-tags');
+    if (art.year) tags.append(el('span', 'core-tag core-tag--year', String(art.year)));
+    if (art.venue) tags.append(el('span', 'core-tag', art.venue));
+    const h = el('h3', 'core-title');
+    const a = el('a', '', art.title);
+    a.href = art.link; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    h.appendChild(a);
+    card.append(tags, h);
+    if (art.authors) card.append(el('div', 'core-authors', art.authors));
+    card.append(el('div', 'core-divider'), el('div', 'core-label', 'Abstrakt'), el('p', 'core-abstract', art.abstract));
+    const more = el('a', 'core-link', 'Czytaj całość w CORE →');
+    more.href = art.link; more.target = '_blank'; more.rel = 'noopener noreferrer';
+    card.append(more);
+    box.append(card);
+}
+loadCore();
+setInterval(loadCore, 6 * 60 * 60 * 1000);
+
+/* ======================= Quiz sztuki (The Met Open Access) ======================= */
+(function metQuiz() {
+    const box = document.getElementById('metOpts');
+    if (!box) return;
+    const API = 'https://collectionapi.metmuseum.org/public/collection/v1';
+    const img = document.getElementById('metImg');
+    const status = document.getElementById('metStatus');
+    const qEl = document.getElementById('metQuestion');
+    const exEl = document.getElementById('metExpl');
+    const metaEl = document.getElementById('metMeta');
+    const REVEAL_MS = 15000, NEXT_MS = 22000, AFTER_ANSWER_MS = 9000;
+
+    // Epoki wyznaczane z daty powstania dzieła (uproszczenie — pełna data jest pokazywana w wyjaśnieniu).
+    const EPOCHS = [
+        { label: 'Średniowiecze', to: 1399 },
+        { label: 'Renesans', to: 1599 },
+        { label: 'Barok', to: 1749 },
+        { label: 'Klasycyzm / romantyzm', to: 1849 },
+        { label: 'Realizm / impresjonizm', to: 1914 },
+        { label: 'Sztuka XX wieku', to: 9999 }
+    ];
+    const epochOf = y => EPOCHS.find(e => y <= e.to).label;
+    const BASE_ARTISTS = ['Claude Monet', 'Vincent van Gogh', 'Rembrandt', 'Johannes Vermeer', 'Edgar Degas', 'Paul Cézanne',
+        'Francisco de Goya', 'Raphael', 'Caravaggio', 'Pieter Bruegel the Elder', 'Jacques Louis David', 'Édouard Manet',
+        'El Greco', 'Peter Paul Rubens', 'Georges Seurat', 'Pierre-Auguste Renoir', 'Titian', 'J. M. W. Turner'];
+    const seenArtists = new Set();
+
+    let ids = null, cur = null, ok = 0, n = 0, tReveal = null, tNext = null, busy = false;
+    const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const clearTimers = () => { clearTimeout(tReveal); clearTimeout(tNext); };
+
+    async function getIds() {
+        if (ids) return ids;
+        // „Highlights” = najsłynniejsze dzieła z europejskich zbiorów malarstwa (dział 11)
+        const j = await fetch(`${API}/search?hasImages=true&isHighlight=true&departmentId=11&q=painting`).then(r => r.json());
+        if (!j.objectIDs || !j.objectIDs.length) throw new Error('Brak wyników');
+        ids = j.objectIDs;
+        return ids;
+    }
+    async function pickObject() {
+        const list = await getIds();
+        for (let i = 0; i < 8; i++) {
+            const id = list[Math.floor(Math.random() * list.length)];
+            try {
+                const o = await fetch(`${API}/objects/${id}`).then(r => r.json());
+                if (o && o.isPublicDomain && o.primaryImageSmall && o.artistDisplayName && o.objectBeginDate > 0) return o;
+            } catch (e) { /* kolejna próba */ }
+        }
+        throw new Error('Nie znaleziono obiektu');
+    }
+    function meta() { metaEl.textContent = `Wynik ${ok}/${n} · obrazy z Metropolitan Museum of Art`; }
+
+    function reveal(picked) {
+        if (!cur || cur.done) return;
+        cur.done = true;
+        clearTimers();
+        const o = cur.obj;
+        box.querySelectorAll('button').forEach((b, k) => {
+            b.disabled = true;
+            if (cur.opts[k] === cur.answer) b.classList.add('is-good');
+            else if (picked !== undefined && k === picked) b.classList.add('is-bad');
+        });
+        const good = picked !== undefined && cur.opts[picked] === cur.answer;
+        if (picked !== undefined) { n++; if (good) ok++; }
+        exEl.className = 'quiz-expl' + (picked === undefined ? '' : good ? ' is-good' : ' is-bad');
+        exEl.textContent = `${picked === undefined ? '💡' : good ? '✅ Dobrze!' : '❌ Nie tym razem.'} „${o.title}” — ${o.artistDisplayName}, ${o.objectDate || o.objectBeginDate}.`;
+        meta();
+        tNext = setTimeout(nextQuestion, picked === undefined ? NEXT_MS - REVEAL_MS : AFTER_ANSWER_MS);
+    }
+
+    async function nextQuestion() {
+        if (busy) return;
+        busy = true; clearTimers();
+        box.innerHTML = ''; exEl.textContent = ''; exEl.className = 'quiz-expl';
+        status.hidden = false; status.textContent = 'Losuję obraz…';
+        img.hidden = true;
+        try {
+            const o = await pickObject();
+            seenArtists.add(o.artistDisplayName);
+            const mode = Math.random() < 0.5 ? 'artist' : 'epoch';
+            let answer, pool, question;
+            if (mode === 'artist') {
+                answer = o.artistDisplayName;
+                pool = shuffle([...new Set([...seenArtists, ...BASE_ARTISTS])].filter(a => a !== answer)).slice(0, 3);
+                question = 'Kto to namalował?';
+            } else {
+                answer = epochOf(o.objectBeginDate);
+                pool = shuffle(EPOCHS.map(e => e.label).filter(l => l !== answer)).slice(0, 3);
+                question = 'Z jakiej epoki pochodzi ten obraz?';
+            }
+            const opts = shuffle([answer, ...pool]);
+            cur = { obj: o, opts, answer, done: false };
+            qEl.textContent = question;
+            img.onload = () => { img.hidden = false; status.hidden = true; };
+            img.onerror = () => { status.hidden = false; status.textContent = 'Nie udało się wczytać obrazu 😕'; };
+            img.alt = 'Obraz do quizu — zgadnij autora lub epokę';   // tytuł i autor ukryte do czasu odpowiedzi
+            img.src = o.primaryImageSmall;
+            opts.forEach((t, k) => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'quiz-opt'; b.textContent = t;
+                b.addEventListener('click', () => reveal(k));
+                box.appendChild(b);
+            });
+            meta();
+            tReveal = setTimeout(() => reveal(undefined), REVEAL_MS);
+        } catch (e) {
+            console.error('Met:', e);
+            status.hidden = false; status.textContent = 'Brak danych z Met 😕';
+            qEl.textContent = '';
+            tNext = setTimeout(nextQuestion, 60 * 1000);
+        } finally { busy = false; }
+    }
+    document.getElementById('metNext').addEventListener('click', nextQuestion);
+    nextQuestion();
+})();
+
+/* ======================= Biblioteka: książka dnia (Open Library) ======================= */
+(async function ksiazkaDnia() {
+    const titleEl = document.getElementById('libTitle');
+    if (!titleEl) return;
+    try {
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
+        const url = 'https://openlibrary.org/search.json?q=' + encodeURIComponent('subject:"computer science"') +
+            `&sort=editions&limit=5&offset=${(dayOfYear % 40) * 5}&fields=key,title,author_name,first_publish_year,cover_i`;
+        const j = await fetch(url).then(r => r.json());
+        const b = (j.docs || []).find(d => d.cover_i) || (j.docs || [])[0];
+        if (!b) throw new Error('Brak danych');
+        titleEl.textContent = b.title;
+        document.getElementById('libAuthor').textContent =
+            [(b.author_name || []).slice(0, 2).join(', '), b.first_publish_year].filter(Boolean).join(' · ');
+        if (b.cover_i) {
+            const c = document.getElementById('libCover');
+            c.textContent = '';
+            const im = document.createElement('img');
+            im.src = `https://covers.openlibrary.org/b/id/${b.cover_i}-M.jpg`;
+            im.alt = 'Okładka: ' + b.title;
+            c.appendChild(im);
+        }
+        const pick = document.getElementById('libPick');
+        const a = document.createElement('a');
+        a.href = 'https://openlibrary.org' + b.key; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.className = 'lib-link'; a.textContent = 'Zobacz w Open Library';
+        pick.querySelector('.lib-pick-text').appendChild(a);
+    } catch (e) { console.error('Open Library:', e); titleEl.textContent = 'Brak danych 😕'; }
+})();
+
+/* ======================= Bosoteka: Wehikuł czasu (Europeana) ======================= */
+// Klucz: darmowy, własny zarejestrujesz na pro.europeana.eu/page/get-api. 'api2demo' to publiczny klucz testowy (niski limit) — podmień go.
+// Uwaga: klucz w kodzie front-endu jest widoczny dla każdego, kto otworzy stronę.
+const EUROPEANA_KEY = 'api2demo';
+(function europeanaWehikul() {
+    const img = document.getElementById('euroImg');
+    if (!img) return;
+    const status = document.getElementById('euroStatus'), titleEl = document.getElementById('euroTitle'),
+        metaEl = document.getElementById('euroMeta'), agoEl = document.getElementById('euroAgo'), link = document.getElementById('euroLink');
+    // Polskie zbiory cyfrowe z otwartą licencją — temat losowany przy każdej zmianie
+    const themes = [['stara książka', '📜'], ['mapa', '🗺️'], ['rękopis', '✒️'], ['plakat', '🎨'], ['fotografia', '📷'],
+        ['szkoła', '🏫'], ['instrument muzyczny', '🎻'], ['zamek', '🏰'], ['miasto', '🏙️'], ['kalendarz', '🗓️']];
+    const pool = new Map();
+    let busy = false, userUntil = 0, last = '';
+    const lata = n => n === 1 ? '1 rok' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? n + ' lata' : n + ' lat';
+
+    async function load(theme) {
+        if (pool.has(theme)) return pool.get(theme);
+        const u = `https://api.europeana.eu/record/v2/search.json?wskey=${encodeURIComponent(EUROPEANA_KEY)}&query=${encodeURIComponent(theme)}` +
+            `&qf=TYPE:IMAGE&qf=COUNTRY:poland&reusability=open&media=true&thumbnail=true&rows=30`;
+        const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 10000);
+        try {
+            const r = await fetch(u, { signal: ctl.signal });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const items = ((await r.json()).items || []).filter(i => i.edmPreview && i.edmPreview[0] && i.title && i.title[0]);
+            if (!items.length) throw new Error('Brak wyników');
+            pool.set(theme, items);
+            return items;
+        } finally { clearTimeout(t); }
+    }
+    async function next(manual) {
+        if (busy) return;
+        if (!manual && (Date.now() < userUntil || document.documentElement.classList.contains('night-on'))) return;
+        if (manual) userUntil = Date.now() + 60 * 1000;
+        busy = true;
+        try {
+            const [theme, ico] = themes[Math.floor(Math.random() * themes.length)];
+            const items = await load(theme);
+            const it = items[Math.floor(Math.random() * items.length)];
+            const src = it.edmPreview[0].replace(/^http:/, 'https:');
+            if (src === last) return;
+            last = src;
+            const yr = parseInt((it.year || [])[0], 10), thisYear = new Date().getFullYear();
+            titleEl.textContent = String(it.title[0]).replace(/\s+/g, ' ').trim();
+            metaEl.textContent = [(it.dataProvider || [])[0], yr || ''].filter(Boolean).join(' · ');
+            agoEl.textContent = yr && yr > 0 && yr <= thisYear ? `${ico} ${lata(thisYear - yr)} temu` : `${ico} ${theme}`;
+            link.href = it.guid || 'https://www.europeana.eu'; link.hidden = false;
+            img.onload = () => { img.hidden = false; status.hidden = true; };
+            img.onerror = () => { img.hidden = true; status.hidden = false; status.textContent = 'Nie udało się wczytać zdjęcia 😕'; };
+            img.alt = titleEl.textContent;
+            img.src = src;
+        } catch (e) {
+            console.error('Europeana:', e);
+            img.hidden = true; status.hidden = false; status.textContent = 'Brak danych z Europeany 😕';
+        } finally { busy = false; }
+    }
+    document.getElementById('euroNext').addEventListener('click', () => next(true));
+    next(true); userUntil = 0;
+    setInterval(() => next(false), 45 * 1000);
+})();
+
 /* ======================= Tryb totemu 9:16 (pion, bez dotyku) ======================= */
 const TOTEM_W = 720; // szerokość projektowa; na ekranie 1080 px całość jest powiększona 1,5×
 function applyTotem() {
