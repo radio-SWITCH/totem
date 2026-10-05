@@ -387,25 +387,15 @@ html.totem footer { padding-bottom: 60px; }
 html.totem .chips { grid-template-columns: 1fr 1fr; }
 
 
-/* Tryb nocny — po lekcjach czarny ekran z analogowym zegarem */
+/* Tryb nocny — po lekcjach: czysta czerń, zero elementów (OLED/LCD zgaszony do czerni) */
 .night {
-    position: fixed; inset: 0; z-index: 200; background: #000;
-    display: none; align-items: center; justify-content: center; cursor: none;
+    position: fixed; inset: 0; z-index: 2147483647; background: #000;
+    display: none; cursor: none;
 }
-.night.is-on { display: flex; }
-.night-drift { width: 64%; height: 64%; animation: drift-x 151s ease-in-out infinite alternate; }
-.night-drift svg { width: 100%; height: 100%; display: block; animation: drift-y 97s ease-in-out infinite alternate; }
-/* zegar powoli wędruje po ekranie (dwa okresy, więc tor się nie powtarza) — chroni panel przed wypaleniem */
-@keyframes drift-x { from { transform: translateX(-26%); } to { transform: translateX(26%); } }
-@keyframes drift-y { from { transform: translateY(-26%); } to { transform: translateY(26%); } }
-.night .tick { stroke: #262a35; stroke-width: 1; stroke-linecap: round; }
-.night .tick--big { stroke: #5b6175; stroke-width: 2.4; }
-.night .num { fill: #444a5b; font-family: var(--f-display); font-size: 11px; font-weight: 500; }
-.night .hand { stroke: #8a90a4; stroke-linecap: round; }
-.night .hand--hour { stroke-width: 5; }
-.night .hand--min { stroke-width: 3.2; }
-.night .hub { fill: #8a90a4; }
-html.night-on, html.night-on body { background: #000; overflow: hidden; }
+.night.is-on { display: block; }
+html.night-on, html.night-on * { cursor: none !important; }
+html.night-on, html.night-on body { background: #000 !important; overflow: hidden; }
+html.night-on body::before, html.night-on body::after { display: none !important; }
 html.night-on .page, html.night-on .ticker, html.night-on footer, html.night-on .bg-grid, html.night-on .lightbox { display: none !important; }
 
 
@@ -578,3 +568,100 @@ html.totem .lib-pick { flex-direction: column; }
 html.totem .panel--core { grid-column: span 2 !important; }
 html.totem .core-card { max-width: none; padding: 24px 22px; }
 html.totem .core-abstract { text-align: left; }
+
+
+/* ======================= v6.1: dopracowany wygląd ======================= */
+:root {
+    --glass: linear-gradient(155deg, rgba(23, 36, 66, .78), rgba(13, 21, 38, .82));
+    --edge: linear-gradient(135deg, rgba(120, 160, 255, .38), rgba(255, 255, 255, .05) 38%, rgba(51, 214, 192, .22));
+    --shadow-1: 0 18px 40px -18px rgba(0, 0, 0, .65), 0 2px 0 rgba(255, 255, 255, .03) inset;
+}
+::selection { background: rgba(76, 130, 255, .45); color: #fff; }
+:focus-visible { outline: 2px solid var(--live); outline-offset: 3px; border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(var(--signal), var(--live)); }
+
+/* delikatna, powoli płynąca poświata tła */
+body::before {
+    content: ''; position: fixed; inset: -20%; z-index: 0; pointer-events: none;
+    background:
+        radial-gradient(40% 35% at 20% 25%, rgba(76, 130, 255, .16), transparent 70%),
+        radial-gradient(35% 30% at 80% 70%, rgba(51, 214, 192, .11), transparent 70%),
+        radial-gradient(30% 28% at 70% 15%, rgba(242, 163, 64, .08), transparent 70%);
+    animation: aurora 38s ease-in-out infinite alternate;
+}
+@keyframes aurora { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(3%, 3%, 0) scale(1.08); } }
+
+/* pasek górny */
+.topbar { border-bottom: 0; position: relative; }
+.topbar::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line-strong) 20%, var(--signal) 50%, var(--line-strong) 80%, transparent);
+}
+.brand-name { letter-spacing: .01em; }
+
+/* hero: szklana karta z poświatą i gradientowym zegarem */
+.hero {
+    background: var(--glass); border-color: rgba(255, 255, 255, .1); box-shadow: var(--shadow-1);
+}
+.hero-clock {
+    background: linear-gradient(180deg, #ffffff 10%, #a9c1ff 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+    letter-spacing: -.02em; filter: drop-shadow(0 6px 24px rgba(76, 130, 255, .35));
+}
+.lesson-status { letter-spacing: .005em; }
+.lesson-timer { text-shadow: 0 0 22px rgba(242, 163, 64, .35); }
+.ring-progress { filter: drop-shadow(0 0 7px rgba(51, 214, 192, .55)); }
+
+/* kafelki szybkich informacji */
+.chip {
+    background: var(--glass); box-shadow: var(--shadow-1);
+    transition: transform .25s cubic-bezier(.16, 1, .3, 1), border-color .25s, box-shadow .25s;
+}
+.chip-icon { background: linear-gradient(145deg, rgba(76, 130, 255, .28), rgba(51, 214, 192, .14)); box-shadow: 0 0 0 1px rgba(255, 255, 255, .06) inset; }
+
+/* panele: szkło, cienka świecąca krawędź, akcent przy nagłówku */
+.panel {
+    position: relative; background: var(--glass); border-color: transparent; box-shadow: var(--shadow-1);
+    transition: transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s;
+}
+.panel::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+    background: var(--edge);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.panel h2 { padding-bottom: 10px; margin-bottom: 8px; position: relative; letter-spacing: .005em; }
+.panel h2::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 38px; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--signal), var(--live));
+}
+.panel p, .dot-list li { text-wrap: pretty; }
+@media (hover: hover) {
+    .panel:hover { transform: translateY(-3px); box-shadow: 0 26px 50px -20px rgba(0, 0, 0, .75), 0 0 0 1px rgba(76, 130, 255, .12); }
+    .chip:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+}
+
+/* przyciski */
+.btn { background: linear-gradient(135deg, var(--signal), #6f5bff); border: 0; letter-spacing: .01em; }
+.btn--ghost { background: rgba(255, 255, 255, .03); border: 1px solid var(--line-strong); backdrop-filter: blur(6px); }
+.btn--ghost:hover { border-color: var(--live); box-shadow: 0 8px 22px rgba(51, 214, 192, .18); }
+
+/* obrazy w panelach (kosmos, sztuka, Bosoteka) */
+.apod-frame, .art-frame, .euro-img { box-shadow: 0 14px 34px -16px rgba(0, 0, 0, .8); }
+.apod-frame img, .art-frame img, .euro-img img { transition: transform .8s cubic-bezier(.16, 1, .3, 1); }
+@media (hover: hover) { .apod-frame:hover img, .art-frame:hover img, .euro-img:hover img { transform: scale(1.025); } }
+
+/* quiz: odpowiedzi jako przyciski-pigułki */
+.quiz-opt { transition: transform .15s, border-color .2s, background .2s; }
+@media (hover: hover) { .quiz-opt:not(:disabled):hover { transform: translateX(3px); border-color: var(--signal); } }
+
+/* stopka */
+footer { border-top: 0; position: relative; }
+footer::before {
+    content: ''; position: absolute; left: 10%; right: 10%; top: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } .panel, .chip { transition: none; } }
+/* na totemie nie ma myszy — bez efektów hover/poruszania, lżejsze dla starszego sprzętu */
+html.totem body::before { animation: none; }

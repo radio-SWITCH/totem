@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#080d1a" />
+    <meta name="theme-color" content="#080d1a" id="themeColor" />
     <meta name="description" content="Totem informacyjny Zespołu Szkół Informatycznych w Kielcach — zegar, plan dnia, pogoda, wydarzenia i ciekawostki." />
     <title>ZSI Kielce — Totem informacyjny</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234C82FF'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='700' font-size='28' fill='%2304122c' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E" />
@@ -315,15 +315,8 @@
         <small>WeatherAPI.com· Open-Meteo · NBP · Dobrewiadomosci.net.pl · Wikipedia · Open Library · Wheretheiss.at · NASA APOD · GitHub · The Met Open Access · CORE · Europeana</small>
     </footer>
 
-    <!-- Tryb nocny: czarny ekran z analogowym zegarem (po lekcjach) -->
-    <div class="night" id="night" aria-hidden="true">
-        <div class="night-drift"><svg id="nightClock" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <g id="nightFace"></g>
-            <line id="nightHour" x1="100" y1="100" x2="100" y2="54" class="hand hand--hour"></line>
-            <line id="nightMin" x1="100" y1="100" x2="100" y2="30" class="hand hand--min"></line>
-            <circle cx="100" cy="100" r="3.4" class="hub"></circle>
-        </svg></div>
-    </div>
+    <!-- Tryb nocny: całkowicie czarny ekran, bez żadnych elementów (po lekcjach) -->
+    <div class="night" id="night" aria-hidden="true"></div>
 
     <!-- Lightbox galerii -->
     <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">

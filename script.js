@@ -1378,8 +1378,7 @@ loadGood();
 setInterval(loadGood, 15 * 60 * 1000);
 
 /* ======================= Kosmiczny Kalendarz (NASA APOD) ======================= */
-// Klucz z api.nasa.gov (limit 1000 zapytań/h). Uwaga: klucz w kodzie front-endu jest widoczny dla każdego, kto otworzy stronę.
-const NASA_KEY = 'M8BUGBOUn3rRkYmv69ESAgsGngFdg6YNWxvNLwgk';
+// APOD działa teraz bez klucza (science.nasa.gov/wp-json/wp/v2/apod-basic).
 (function kosmicznyKalendarz() {
     const selD = document.getElementById('apodDay');
     const selM = document.getElementById('apodMonth');
@@ -1417,22 +1416,38 @@ const NASA_KEY = 'M8BUGBOUn3rRkYmv69ESAgsGngFdg6YNWxvNLwgk';
     }
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-    // 1) APOD: własny klucz, DEMO_KEY tylko gdy klucz odrzucony/limit. Krótki timeout — awaria NASA nie blokuje panelu.
+    // 1) APOD — od 29.09.2026 nowy adres (science.nasa.gov, bez klucza). Stary api.nasa.gov/planetary/apod
+    //    zwraca teraz logo NASA dla KAŻDEJ daty, więc nie można go używać nawet jako zapasu.
+    const stripHtml = v => {
+        const s = (v && typeof v === 'object') ? (v.rendered || '') : String(v || '');
+        const t = document.createElement('textarea');
+        t.innerHTML = s.replace(/<[^>]+>/g, ' ');
+        return t.value.replace(/\s+/g, ' ').trim();
+    };
     async function fetchApod(date) {
         if (cache.has(date)) return cache.get(date);
-        let last = 'brak odpowiedzi';
-        for (const key of [...new Set([NASA_KEY, 'DEMO_KEY'])]) {
-            try {
-                const r = await getJson(`https://api.nasa.gov/planetary/apod?api_key=${key}&date=${date}&thumbs=true`, 8000);
-                if (r.ok) { const j = await r.json(); cache.set(date, j); return j; }
-                last = 'HTTP ' + r.status;
-                if (r.status !== 403 && r.status !== 429) break;   // 400/5xx — inny klucz nie pomoże, od razu zapas
-            } catch (e) {
-                last = e.name === 'AbortError' ? 'timeout' : 'błąd sieci/CORS';
-                break;
-            }
-        }
-        throw new Error(last);
+        const yymmdd = date.slice(2).replace(/-/g, '');
+        let r;
+        try { r = await getJson(`https://science.nasa.gov/wp-json/wp/v2/apod-basic/${yymmdd}`, 9000); }
+        catch (e) { throw new Error(e.name === 'AbortError' ? 'timeout' : 'błąd sieci/CORS'); }
+        if (!r.ok) throw new Error(r.status === 404 ? 'brak wpisu na ten dzień' : 'HTTP ' + r.status);
+        let j = await r.json();
+        if (Array.isArray(j)) j = j[0];
+        if (!j) throw new Error('pusta odpowiedź');
+        // `url` to teraz adres strony artykułu — obraz bierzemy z hdurl, a w razie braku z <img> w basic_html
+        const html = typeof j.basic_html === 'object' && j.basic_html ? (j.basic_html.rendered || '') : String(j.basic_html || '');
+        const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+        const full = String(j.hdurl || (m && m[1]) || j.thumbnail_url || '').replace(/^http:\/\//, 'https://');
+        if (!full) throw new Error('brak obrazu');
+        // duże oryginały zmniejszamy po stronie serwera NASA; gdy się nie uda, onerror wraca do oryginału (url2)
+        const small = /science\.nasa\.gov\/wp-content/.test(full) && !full.includes('?') ? full + '?w=1280&h=1280&fit=clip' : full;
+        const d = {
+            media_type: j.media_type === 'video' ? 'video' : 'image',
+            url: small, thumbnail_url: small, url2: full === small ? '' : full,
+            title: stripHtml(j.title), copyright: stripHtml(j.copyright)
+        };
+        cache.set(date, d);
+        return d;
     }
 
     // 2) Zapas: NASA Image and Video Library (bez klucza) — do 4 różnych tematów w danym roku, żeby pusty wynik nie kończył się błędem.
@@ -1662,7 +1677,10 @@ setInterval(loadCore, 6 * 60 * 60 * 1000);
     async function getIds() {
         if (ids) return ids;
         // „Highlights” = najsłynniejsze dzieła z europejskich zbiorów malarstwa (dział 11)
-        const j = await fetch(`${API}/search?hasImages=true&isHighlight=true&departmentId=11&q=painting`).then(r => r.json());
+        // /v1/search wyłączono 1.10.2026; /v1.1/search zwraca domyślnie tylko 100 wyników — prosimy o max 500
+        const resp = await fetch(`${API.replace('/v1', '/v1.1')}/search?hasImages=true&isHighlight=true&departmentId=11&q=painting&offset=0&limit=500`);
+        if (!resp.ok) throw new Error('Met HTTP ' + resp.status);
+        const j = await resp.json();
         if (!j.objectIDs || !j.objectIDs.length) throw new Error('Brak wyników');
         ids = j.objectIDs;
         return ids;
@@ -1898,7 +1916,7 @@ addEventListener('resize', applyTotem);
 })();
 
 
-/* ======================= Tryb nocny: po lekcjach czarny ekran z analogowym zegarem ======================= */
+/* ======================= Tryb nocny: po lekcjach całkowicie czarny ekran (nic na nim nie ma) ======================= */
 // Ekran gaśnie o NIGHT_FROM (10 min po ostatniej lekcji, która kończy się o 18:10) i wraca o NIGHT_TO.
 // Podgląd bez czekania do wieczora: dopisz ?night do adresu strony. ?day wyłącza tryb nocny.
 const NIGHT_FROM = '18:20';
@@ -1906,32 +1924,8 @@ const NIGHT_TO = '07:00';
 (function nightMode() {
     const root = document.documentElement;
     const overlay = document.getElementById('night');
-    const face = document.getElementById('nightFace');
-    const hHand = document.getElementById('nightHour');
-    const mHand = document.getElementById('nightMin');
-    if (!overlay || !face) return;
-
-    // tarcza: 60 kresek (co 5. grubsza) + cyfry 1–12
-    const NS = 'http://www.w3.org/2000/svg';
-    const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-    for (let i = 0; i < 60; i++) {
-        const big = i % 5 === 0, a = i * 6 * Math.PI / 180;
-        const r1 = 96, r2 = big ? 88 : 92.5;
-        face.appendChild(mk('line', {
-            x1: 100 + r1 * Math.sin(a), y1: 100 - r1 * Math.cos(a),
-            x2: 100 + r2 * Math.sin(a), y2: 100 - r2 * Math.cos(a),
-            class: big ? 'tick tick--big' : 'tick'
-        }));
-    }
-    for (let n = 1; n <= 12; n++) {
-        const a = n * 30 * Math.PI / 180, t = mk('text', {
-            x: 100 + 74 * Math.sin(a), y: 100 - 74 * Math.cos(a), class: 'num',
-            'text-anchor': 'middle', 'dominant-baseline': 'central'
-        });
-        t.textContent = n;
-        face.appendChild(t);
-    }
-
+    const themeColor = document.getElementById('themeColor');
+    if (!overlay) return;
     const toMin = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
     const FROM = toMin(NIGHT_FROM), TO = toMin(NIGHT_TO);
     const forced = /[?&]night/.test(location.search);
@@ -1942,27 +1936,21 @@ const NIGHT_TO = '07:00';
         const m = d.getHours() * 60 + d.getMinutes();
         return FROM > TO ? (m >= FROM || m < TO) : (m >= FROM && m < TO);
     };
-    const rot = (el, deg) => el.setAttribute('transform', `rotate(${deg} 100 100)`);
-
     let last = null;
     function tick() {
-        const now = new Date(), night = isNight(now);
-        if (night !== last) {
-            last = night;
-            root.classList.toggle('night-on', night);
-            overlay.classList.toggle('is-on', night);
-            overlay.setAttribute('aria-hidden', String(!night));
-            if (night) {
-                if (typeof closeLightbox === 'function') closeLightbox();
-                const au = document.getElementById('dzwonekAudio'); if (au && !au.paused) au.pause();
-            } else {
-                scrollTo(0, 0);
-            }
+        const night = isNight(new Date());
+        if (night === last) return;
+        last = night;
+        root.classList.toggle('night-on', night);
+        overlay.classList.toggle('is-on', night);
+        overlay.setAttribute('aria-hidden', String(!night));
+        if (themeColor) themeColor.setAttribute('content', night ? '#000000' : '#080d1a');
+        if (night) {
+            if (typeof closeLightbox === 'function') closeLightbox();
+            const au = document.getElementById('dzwonekAudio'); if (au && !au.paused) au.pause();
+        } else {
+            scrollTo(0, 0);
         }
-        if (!night) return;
-        const h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
-        rot(mHand, m * 6 + s * 0.1);
-        rot(hHand, h * 30 + m * 0.5);
     }
     tick();
     setInterval(tick, 1000);
