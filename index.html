@@ -318,6 +318,12 @@
     <!-- Tryb nocny: całkowicie czarny ekran, bez żadnych elementów (po lekcjach) -->
     <div class="night" id="night" aria-hidden="true"></div>
 
+    <!-- Plakat: pełnoekranowy, pokazuje się cyklicznie, gdy w plakaty/plakaty.json jest aktywny wpis -->
+    <div class="poster" id="poster" role="dialog" aria-label="Plakat" aria-hidden="true">
+        <img id="posterImg" src="" alt="">
+        <div class="poster-timer" id="posterTimer"></div>
+    </div>
+
     <!-- Lightbox galerii -->
     <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
         <button class="lightbox-close" onclick="closeLightbox()" aria-label="Zamknij">✕</button>

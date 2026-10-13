@@ -1917,24 +1917,26 @@ addEventListener('resize', applyTotem);
 
 
 /* ======================= Tryb nocny: po lekcjach całkowicie czarny ekran (nic na nim nie ma) ======================= */
-// Ekran gaśnie o NIGHT_FROM (10 min po ostatniej lekcji, która kończy się o 18:10) i wraca o NIGHT_TO.
-// Podgląd bez czekania do wieczora: dopisz ?night do adresu strony. ?day wyłącza tryb nocny.
-const NIGHT_FROM = '18:20';
-const NIGHT_TO = '07:00';
+// Dzień: od poniedziałku do piątku, DAY_FROM–DAY_TO. Poza tym przedziałem oraz w całą sobotę i niedzielę jest noc.
+// Podgląd bez czekania: dopisz ?night do adresu strony. ?day wyłącza tryb nocny.
+const DAY_FROM = '07:00';
+const DAY_TO = '17:25';
 (function nightMode() {
     const root = document.documentElement;
     const overlay = document.getElementById('night');
     const themeColor = document.getElementById('themeColor');
     if (!overlay) return;
     const toMin = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
-    const FROM = toMin(NIGHT_FROM), TO = toMin(NIGHT_TO);
+    const FROM = toMin(DAY_FROM), TO = toMin(DAY_TO);
     const forced = /[?&]night/.test(location.search);
     const noNight = /[?&]day/.test(location.search);   // ?day — wyłącza tryb nocny (do testów i serwisu)
     const isNight = d => {
         if (noNight) return false;
         if (forced) return true;
+        const dow = d.getDay();                        // 0 = niedziela, 6 = sobota
+        if (dow === 0 || dow === 6) return true;       // weekend: cały czas noc
         const m = d.getHours() * 60 + d.getMinutes();
-        return FROM > TO ? (m >= FROM || m < TO) : (m >= FROM && m < TO);
+        return !(m >= FROM && m < TO);                 // dzień roboczy: dzień tylko w DAY_FROM–DAY_TO
     };
     let last = null;
     function tick() {
@@ -1954,4 +1956,91 @@ const NIGHT_TO = '07:00';
     }
     tick();
     setInterval(tick, 1000);
+})();
+
+
+/* ======================= Plakat: pełny ekran, gdy jest co pokazać ======================= */
+// Jak dodać plakat: wrzuć plik (JPG/PNG/WebP) do folderu plakaty/ i dopisz wpis w plakaty/plakaty.json, potem commit + push.
+// Totem sam pobiera plakaty.json co 5 minut — bez przeładowania strony. Wpis może mieć "od" i "do" (RRRR-MM-DD, "do" włącznie),
+// więc plakat sam się włączy i sam zniknie. Bez aktywnych wpisów totem wygląda jak zwykle.
+// Podgląd przed commitem: dopisz ?plakat=nazwa.jpg do adresu strony (plik z folderu plakaty/).
+(function plakat() {
+    const FOLDER = 'plakaty/';
+    const root = document.documentElement;
+    const box = document.getElementById('poster');
+    const img = document.getElementById('posterImg');
+    const bar = document.getElementById('posterTimer');
+    if (!box || !img || !bar) return;
+
+    const preview = (location.search.match(/[?&]plakat=([^&]+)/) || [])[1];
+    const cfg = { pokaz: 20, przerwa: 40 };   // sekundy: ile plakat jest na ekranie / ile przerwy między pokazami
+    let list = [], idx = 0, hideTimer = null, nextTimer = null;
+
+    const today = () => {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    };
+    const active = () => {
+        const t = today();
+        return list.filter(p => p && p.plik && (!p.od || p.od <= t) && (!p.do || p.do >= t));
+    };
+
+    async function load() {
+        if (preview) { list = [{ plik: decodeURIComponent(preview) }]; return; }
+        try {
+            const r = await fetch(FOLDER + 'plakaty.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const j = await r.json();
+            const n = v => (Number(v) > 0 ? Number(v) : 0);
+            cfg.pokaz = n(j.pokazuj_sekund) || 20;
+            cfg.przerwa = n(j.przerwa_sekund) || 40;
+            list = Array.isArray(j.plakaty) ? j.plakaty : [];
+        } catch (e) {
+            list = [];   // brak pliku lub błąd — po prostu bez plakatu
+        }
+    }
+
+    function schedule(sec) {
+        clearTimeout(nextTimer);
+        nextTimer = setTimeout(show, (sec || cfg.przerwa) * 1000);
+    }
+
+    function hide() {
+        clearTimeout(hideTimer);
+        box.classList.remove('is-on');
+        box.setAttribute('aria-hidden', 'true');
+        schedule();
+    }
+
+    function show() {
+        if (root.classList.contains('night-on')) return schedule();
+        const act = active();
+        if (!act.length) return schedule();
+        const p = act[idx++ % act.length];
+        const src = FOLDER + encodeURI(p.plik);
+        const probe = new Image();
+        probe.onload = () => {
+            const sec = Number(p.sekund) > 0 ? Number(p.sekund) : cfg.pokaz;
+            img.src = src;
+            img.alt = p.opis || 'Plakat';
+            box.classList.add('is-on');
+            box.setAttribute('aria-hidden', 'false');
+            bar.style.transition = 'none';
+            bar.style.transform = 'scaleX(1)';
+            void bar.offsetWidth;
+            bar.style.transition = 'transform ' + sec + 's linear';
+            bar.style.transform = 'scaleX(0)';
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(hide, sec * 1000);
+        };
+        probe.onerror = () => { console.warn('Plakat: nie udało się wczytać', src); schedule(); };
+        probe.src = src;
+    }
+
+    box.addEventListener('click', hide);                                  // dotknięcie zamyka plakat do następnego cyklu
+    addEventListener('keydown', e => { if (e.key === 'Escape' && box.classList.contains('is-on')) hide(); });
+    setInterval(() => { if (root.classList.contains('night-on') && box.classList.contains('is-on')) hide(); }, 1000);
+
+    load().then(() => schedule(preview ? 1 : cfg.przerwa));
+    setInterval(load, 5 * 60 * 1000);
 })();
