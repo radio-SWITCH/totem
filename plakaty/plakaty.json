@@ -2,6 +2,17 @@
   "pokazuj_sekund": 20,
   "przerwa_sekund": 40,
   "plakaty": [
-    { "plik": "erasmus-days.jpg", "od": "2026-10-12", "do": "2026-10-17", "opis": "Erasmus Days" }
+    {
+      "plik": "erasmus-days.jpg",
+      "od": "2026-10-12",
+      "do": "2026-10-17",
+      "opis": "Erasmus Days"
+    },
+{
+      "plik": "code-week.jpg",
+      "od": "2026-10-19",
+      "do": "2026-10-23",
+      "opis": "Code Week"
+    }
   ]
 }
