@@ -433,7 +433,7 @@ html.totem .panel { grid-column: span 2 !important; text-align: center; }
 html.totem .panel--air, html.totem .panel--iss { grid-column: span 1 !important; }
 html.totem .panel h2 { justify-content: center; text-align: center; flex-wrap: wrap; }
 html.totem .panel h3 { text-align: center; }
-html.totem .panel--radio h3, html.totem .panel--radio .radio-row { display: none; }   /* odtwarzacz i tak ukryty na totemie */
+html.totem .panel--radio h3:not(.queue-heading), html.totem .panel--radio .radio-row { display: none; }   /* odtwarzacz i tak ukryty na totemie */
 html.totem .fact-box { border-left: 0; border-top: 3px solid var(--signal); border-radius: 0 0 10px 10px; }
 html.totem .quiz-opt { text-align: center; }
 html.totem .quiz-meta { text-align: center; }
@@ -674,3 +674,23 @@ html.totem body::before { animation: none; }
     background: var(--signal); transform-origin: left center;
 }
 @keyframes posterIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- v5.3: kolejka utworów radiowęzła --- */
+.queue-list { list-style: none; margin: 10px 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.queue-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 10px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-md);
+}
+.queue-item:first-child { border-color: rgba(51, 214, 192, .35); }
+.queue-item:first-child .queue-pos { color: var(--live); }
+.queue-pos { flex: 0 0 22px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); text-align: center; }
+.queue-cover { flex: 0 0 80px; width: 80px; height: 45px; object-fit: cover; border-radius: var(--r-sm); background: var(--panel); }
+.queue-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.queue-title, .queue-author { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-title { font-family: var(--f-display); font-weight: 500; font-size: 15px; color: var(--paper); }
+.queue-author { font-size: 12.5px; color: var(--muted); }
+.queue-when { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.queue-time { font-family: var(--f-mono); font-size: 13px; color: var(--warn); }
+.queue-dur { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.queue-empty { padding: 14px; text-align: center; color: var(--muted); font-size: 14px; }
+html.totem .queue-list { text-align: left; }

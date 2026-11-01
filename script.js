@@ -1132,6 +1132,99 @@
             dzwonekAudio.addEventListener('ended', () => eqBars.classList.remove('is-playing'));
         }
 
+        /* ======================= Radiowęzeł: kolejka utworów ======================= */
+        const QUEUE_SHOW = 5;               // ile utworów z kolejki pokazać (reszta się nie mieści na totemie)
+        const QUEUE_REFRESH_MS = 30 * 1000; // jak często odświeżać
+
+        function fmtQueueTime(iso) {
+            const d = new Date(iso);
+            if (isNaN(d)) return '';
+            return d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' });
+        }
+        function fmtQueueDuration(sec) {
+            sec = Number(sec);
+            if (!(sec > 0)) return '';
+            return Math.floor(sec / 60) + ':' + String(Math.round(sec % 60)).padStart(2, '0');
+        }
+        function queueMessage(list, text) {
+            list.replaceChildren();
+            const li = document.createElement('li');
+            li.className = 'queue-empty';
+            li.textContent = text;
+            list.appendChild(li);
+        }
+        // Mała pomoc: tworzy element z klasą i tekstem
+        function qEl(tag, cls, text) {
+            const el = document.createElement(tag);
+            el.className = cls;
+            if (text) el.textContent = text;
+            return el;
+        }
+
+        // Pętla po tablicy piosenek: dla każdej powstaje jeden <li> z okładką, tytułem, autorem i godziną emisji
+        function renderQueue(songs) {
+            const list = document.getElementById('queueList');
+            if (!list) return;
+            if (!songs.length) return queueMessage(list, 'Kolejka jest pusta');
+
+            list.replaceChildren();
+            songs.slice(0, QUEUE_SHOW).forEach((song, i) => {
+                const li = qEl('li', 'queue-item');
+                li.appendChild(qEl('span', 'queue-pos', i + 1));
+
+                const cover = qEl('img', 'queue-cover');
+                cover.alt = '';
+                cover.loading = 'lazy';
+                cover.referrerPolicy = 'no-referrer';
+                cover.onerror = () => { cover.style.visibility = 'hidden'; };
+                if (song.coverUrl) cover.src = song.coverUrl;
+                li.appendChild(cover);
+
+                const text = qEl('div', 'queue-text');
+                text.appendChild(qEl('strong', 'queue-title', song.title || 'Bez tytułu'));
+                text.appendChild(qEl('span', 'queue-author', song.author || ''));
+                li.appendChild(text);
+
+                const when = qEl('div', 'queue-when');
+                when.appendChild(qEl('span', 'queue-time', fmtQueueTime(song.estimatedPlayAt)));
+                when.appendChild(qEl('span', 'queue-dur', fmtQueueDuration(song.durationSeconds)));
+                li.appendChild(when);
+
+                list.appendChild(li);
+            });
+        }
+
+        // Serwer radia nie wysyła nagłówków CORS, więc strona na GitHub Pages nie może czytać jego API wprost.
+        // Kolejkę pobiera więc po stronie serwera workflow GitHub Actions (.github/workflows/queue.yml)
+        // i zapisuje do pliku queue.json obok index.html — stąd czytamy ją bez żadnego CORS.
+        const QUEUE_SOURCE = 'queue.json';
+        async function fetchQueueJson() {
+            const r = await fetch(QUEUE_SOURCE + '?t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }
+
+        async function loadQueue() {
+            const list = document.getElementById('queueList');
+            if (!list || document.documentElement.classList.contains('night-on')) return;
+            try {
+                const data = await fetchQueueJson();
+                const songs = Array.isArray(data.queue) ? data.queue : [];
+                // plik może mieć kilka minut, więc pomijamy utwory, które już się skończyły
+                const now = Date.now();
+                renderQueue(songs.filter(s => {
+                    const t = Date.parse(s.estimatedPlayAt);
+                    return isNaN(t) || t + (Number(s.durationSeconds) || 0) * 1000 > now;
+                }));
+            } catch (e) {
+                console.error('Błąd kolejki radiowęzła:', e);
+                // zostawiamy ostatnio wyświetloną kolejkę; komunikat tylko, gdy nic jeszcze nie ma
+                if (!list.querySelector('.queue-item')) queueMessage(list, 'Kolejka chwilowo niedostępna');
+            }
+        }
+        loadQueue();
+        setInterval(loadQueue, QUEUE_REFRESH_MS);
+
         /* ======================= Galeria: lightbox ======================= */
         function openLightbox(src, alt) {
             document.getElementById('lightboxImg').src = src;
