@@ -1,0 +1,18 @@
+{
+    "showSeconds": 20,
+    "breakSeconds": 40,
+    "posters": [
+        {
+            "file": "erasmus-days.jpg",
+            "from": "2026-10-12",
+            "to": "2026-10-17",
+            "description": "Erasmus Days"
+        },
+        {
+            "file": "code-week.jpg",
+            "from": "2026-10-19",
+            "to": "2026-10-30",
+            "description": "Code Week"
+        }
+    ]
+}

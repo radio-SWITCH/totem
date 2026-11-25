@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<!-- ==========================================================================
+     index.html — Quiz „Jaki to język?” (Europejski Dzień Języków Obcych, ZSI Kielce)
+     Układ ekranów. Style: style.css, logika: script.js (konwencje nazw: README.md).
+     ========================================================================== -->
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+    <meta name="description"
+        content="Quiz muzyczny na Europejski Dzień Języków Obcych — zgadnij język piosenki. ZSI Kielce, organizator: Switch.">
+    <title>Jaki to język? — Europejski Dzień Języków Obcych, ZSI Kielce</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <noscript>
+        <div style="padding:40px;text-align:center;">Ta strona wymaga włączonego JavaScriptu.</div>
+    </noscript>
+
+    <audio id="player" preload="auto" style="display:none"></audio>
+
+    <!-- ========== EKRAN STARTOWY ========== -->
+    <section id="viewStart" class="view" hidden>
+        <div class="stage">
+            <div class="equalizer" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <h1 class="headline">Europejski Dzień Języków Obcych</h1>
+            <p class="subhead">Jaka to melodia… ale jaki to język?</p>
+            <p class="lede">Posłuchaj krótkiego fragmentu piosenki i zgadnij, w jakim języku śpiewa wykonawca. Pięć pytań,
+                liczy się czas — pięć najszybszych osób z kompletem poprawnych odpowiedzi wygrywa nagrody.</p>
+
+            <div class="poster-panel">
+                <h2 class="panel-title">Ranking na żywo</h2>
+                <div id="startLeaderboard" class="leaderboard-list"></div>
+            </div>
+
+            <button id="playButton" type="button" class="btn btn--primary btn--huge">Zagraj</button>
+            <p class="fineprint">Każda osoba może zagrać tylko raz.</p>
+            <p id="storageWarning" class="storage-warning" hidden>Ta przeglądarka nie zapisuje wyników — ranking i blokada
+                podwójnego udziału mogą nie działać poprawnie na tym urządzeniu.</p>
+        </div>
+        <footer class="credit">Organizuje Radiowezeł Switch, ZSI Kielce</footer>
+    </section>
+
+    <!-- ========== REJESTRACJA ========== -->
+    <section id="viewRegister" class="view" hidden>
+        <div class="stage stage--narrow">
+            <h1 class="headline headline--mid">Zanim zaczniesz</h1>
+            <p class="lede">Wpisz dane, po których rozpoznamy Twój wynik w rankingu. Grasz tylko raz, więc się przygotuj!</p>
+            <form id="registerForm" class="poster-panel form-panel">
+                <label class="field">
+                    <span>Imię i nazwisko</span>
+                    <input type="text" id="nameInput" autocomplete="off" placeholder="np. Jan Kowalski" required>
+                </label>
+                <label class="field">Klasa <input type="text" id="classInput" autocomplete="off" placeholder="np. 3C (nauczyciel: 00)"
+                        required></label>
+
+                <p id="registerError" class="form-error" hidden></p>
+                <button type="submit" class="btn btn--primary btn--huge">Zaczynamy</button>
+            </form>
+            <button id="backToStartButton" type="button" class="btn btn--ghost">Wróć</button>
+        </div>
+    </section>
+
+    <!-- ========== QUIZ ========== -->
+    <section id="viewQuiz" class="view" hidden>
+        <div class="stage stage--narrow">
+            <div class="quiz-top">
+                <span id="roundLabel" class="round-label">Pytanie 1 z 5</span>
+                <span id="timerDisplay" class="timer-display">0,0 s</span>
+            </div>
+            <div class="poster-panel quiz-panel">
+                <button id="playSnippetButton" type="button" class="play-circle" aria-label="Odsłuchaj fragment">
+                    <span aria-hidden="true">▶</span>
+                </button>
+                <p id="playLabel" class="play-label">Posłuchaj fragmentu</p>
+                <h2 class="question">W jakim języku śpiewa wykonawca?</h2>
+                <div id="answerOptions" class="options-grid"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== WYNIK ========== -->
+    <section id="viewResult" class="view" hidden>
+        <div class="stage stage--narrow">
+            <div class="poster-panel result-panel">
+                <p id="resultScore" class="result-score">5 / 5</p>
+                <p id="resultTime" class="result-time">Twój czas: 0,0 s</p>
+                <p id="resultMessage" class="result-message"></p>
+                <div class="leaderboard-panel-inner">
+                    <h2 class="panel-title">Ranking na żywo</h2>
+                    <div id="resultLeaderboard" class="leaderboard-list"></div>
+                </div>
+                <button id="finishButton" type="button" class="btn btn--primary">Zakończ</button>
+                <p id="autoReturnNote" class="fineprint"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== ADMIN: PIN ========== -->
+    <div id="pinModal" class="modal-backdrop" hidden>
+        <form id="pinForm" class="modal-panel">
+            <h2 style="margin:0;">Panel organizatora</h2>
+            <label class="field">
+                <span>PIN</span>
+                <input type="password" id="pinInput" inputmode="numeric" autocomplete="off">
+            </label>
+            <p id="pinError" class="form-error" hidden>Nieprawidłowy PIN.</p>
+            <div class="modal-actions">
+                <button type="button" id="cancelPinButton" class="btn btn--ghost">Zamknij</button>
+                <button type="submit" class="btn btn--primary">Zaloguj</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ========== ADMIN: PANEL ========== -->
+    <div id="adminModal" class="modal-backdrop" hidden>
+        <div class="modal-panel modal-panel--wide">
+            <h2 style="margin:0;">Wyniki uczestników</h2>
+            <p id="adminSummary" class="admin-summary"></p>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Imię i nazwisko</th>
+                            <th>Klasa</th>
+                            <th>Wynik</th>
+                            <th>Czas</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="exportCsvButton" class="btn btn--ghost">Eksportuj CSV</button>
+                <button type="button" id="clearDataButton" class="btn btn--danger">Wyczyść wszystkie dane</button>
+                <button type="button" id="closeAdminButton" class="btn btn--primary">Zamknij</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="adminGear" type="button" class="admin-gear" aria-label="Panel organizatora">⚙</button>
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

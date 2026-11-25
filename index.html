@@ -1,14 +1,19 @@
 <!DOCTYPE html>
+<!-- ==========================================================================
+     index.html — Totem informacyjny ZSI Kielce
+     Układ strony. Style: style.css, logika: script.js (konwencje nazw: README.md).
+     id elementów: camelCase z przedrostkiem panelu; klasy: kebab-case; stany: is-*.
+     ========================================================================== -->
 <html lang="pl">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#080d1a" id="themeColor" />
-    <meta name="description" content="Totem informacyjny Zespołu Szkół Informatycznych w Kielcach — zegar, plan dnia, pogoda, wydarzenia i ciekawostki." />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#080d1a" id="themeColor">
+    <meta name="description" content="Totem informacyjny Zespołu Szkół Informatycznych w Kielcach — zegar, plan dnia, pogoda, wydarzenia i ciekawostki.">
     <title>ZSI Kielce — Totem informacyjny</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234C82FF'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='700' font-size='28' fill='%2304122c' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234C82FF'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='700' font-size='28' fill='%2304122c' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -20,11 +25,11 @@
 
     <div class="page">
 
-        <!-- Górny pasek -->
-        <header class="topbar reveal" style="--d:0ms">
+        <!-- ========== GÓRNY PASEK ========== -->
+        <header class="topbar reveal" style="--reveal-delay: 0ms">
             <div class="brand">
                 <div class="brand-mark">
-                    <img id="schoolLogo" src="https://www.zsi.kielce.pl/wp-content/uploads/2020/03/logo-mobile.png" alt="Zespół Szkół Informatycznych" onerror="handleLogoError()">
+                    <img id="schoolLogo" src="https://www.zsi.kielce.pl/wp-content/uploads/2020/03/logo-mobile.png" alt="Zespół Szkół Informatycznych">
                 </div>
                 <div class="brand-text">
                     <div class="brand-name">Zespół Szkół Informatycznych</div>
@@ -34,8 +39,8 @@
         </header>
 
         <main>
-            <!-- Hero: zegar + stan lekcji -->
-            <section class="hero reveal" style="--d:60ms" aria-label="Aktualny czas i stan lekcji">
+            <!-- ========== HERO: ZEGAR + STAN LEKCJI ========== -->
+            <section class="hero reveal" style="--reveal-delay: 60ms" aria-label="Aktualny czas i stan lekcji">
                 <div class="hero-time">
                     <div class="hero-clock" id="heroClock">--:--:--</div>
                     <div class="hero-date" id="heroDate">—</div>
@@ -56,34 +61,34 @@
                 </div>
             </section>
 
-            <!-- Szybkie informacje -->
+            <!-- ========== SZYBKIE INFORMACJE ========== -->
             <section class="chips" aria-label="Szybkie informacje">
-                <div class="chip reveal" style="--d:110ms">
+                <div class="chip reveal" style="--reveal-delay: 110ms">
                     <div class="chip-icon" aria-hidden="true">🌤️</div>
                     <div>
                         <div class="chip-label">Pogoda w Kielcach</div>
                         <div class="chip-value">
-                            <img id="weatherIcon" src="" alt="" />
-                            <span id="weatherTemp">--</span>°C
-                            <small id="weatherDesc">wczytywanie…</small>
+                            <img id="weatherIcon" src="" alt="">
+                            <span id="weatherTemperature">--</span>°C
+                            <small id="weatherDescription">wczytywanie…</small>
                         </div>
                     </div>
                 </div>
-                <div class="chip reveal" style="--d:150ms">
+                <div class="chip reveal" style="--reveal-delay: 150ms">
                     <div class="chip-icon" aria-hidden="true">🥳</div>
                     <div>
                         <div class="chip-label">Imieniny dziś świętują</div>
-                        <div class="chip-value text" id="imieninyValue">Ładuję dane…</div>
+                        <div class="chip-value chip-value--text" id="namedayValue">Ładuję dane…</div>
                     </div>
                 </div>
-                <div class="chip reveal" style="--d:190ms">
+                <div class="chip reveal" style="--reveal-delay: 190ms">
                     <div class="chip-icon" aria-hidden="true">🎓</div>
                     <div>
                         <div class="chip-label">Do końca roku szkolnego</div>
                         <div class="chip-value" id="countdownValue">--</div>
                     </div>
                 </div>
-                <div class="chip reveal" style="--d:230ms">
+                <div class="chip reveal" style="--reveal-delay: 230ms">
                     <div class="chip-icon" aria-hidden="true">🏖️</div>
                     <div>
                         <div class="chip-label">Do najbliższego dnia wolnego</div>
@@ -93,10 +98,12 @@
                 </div>
             </section>
 
-            <!-- Bento: treści -->
+            <!-- ========== BENTO: TREŚCI ========== -->
             <div class="bento">
 
-                <article class="panel panel--school reveal" style="--d:230ms">
+                <!-- ---------- Panel: school ---------- -->
+
+                <article class="panel panel--school reveal" style="--reveal-delay: 230ms">
                     <h2>🏫 O naszej szkole</h2>
                     <p>Zespół Szkół Informatycznych w Kielcach to nowoczesna placówka edukacyjna, która od lat kształci specjalistów w branży IT oraz innych dziedzinach technicznych.</p>
                     <p>Oferujemy naukę na następujących kierunkach:</p>
@@ -110,14 +117,16 @@
                     <p>Więcej informacji znajdziesz na oficjalnej stronie szkoły: <a href="http://zsi.kielce.pl" target="_blank" rel="noopener noreferrer">zsi.kielce.pl</a></p>
                 </article>
 
-                <article class="panel panel--radio reveal" style="--d:260ms">
+                <!-- ---------- Panel: radio ---------- -->
+
+                <article class="panel panel--radio reveal" style="--reveal-delay: 260ms">
                     <h2>🎙️ Radiowęzeł SWITCH</h2>
                     <p>Radiowęzeł każdego tygodnia emituje nowy utwór jako szkolny dzwonek oraz informuje o aktualnościach.</p>
                     <p>Więcej informacji na stronie: <a href="https://switch.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">switch.zsi.kielce.pl</a></p>
                     <h3>Aktualny dzwonek</h3>
                     <div class="radio-row">
-                        <div class="eq" id="eqBars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-                        <audio controls id="dzwonekAudio">
+                        <div class="equalizer" id="equalizerBars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                        <audio controls id="bellAudio">
                             <source src="https://www.zsi.kielce.pl/wp-content/uploads/DZWONEK.mp3" type="audio/mpeg">
                             Twoja przeglądarka nie obsługuje odtwarzania audio.
                         </audio>
@@ -128,7 +137,9 @@
                     </ol>
                 </article>
 
-                <article class="panel panel--news reveal" style="--d:275ms">
+                <!-- ---------- Panel: news ---------- -->
+
+                <article class="panel panel--news reveal" style="--reveal-delay: 275ms">
                     <h2>📰 Aktualności ze strony szkoły</h2>
                     <ul class="news-list" id="newsList">
                         <li>Wczytywanie aktualności…</li>
@@ -136,7 +147,9 @@
                     <p><a href="https://www.zsi.kielce.pl/" target="_blank" rel="noopener noreferrer">Więcej aktualności na stronie szkoły</a></p>
                 </article>
 
-                <article class="panel panel--erasmus reveal" style="--d:290ms">
+                <!-- ---------- Panel: erasmus ---------- -->
+
+                <article class="panel panel--erasmus reveal" style="--reveal-delay: 290ms">
                     <h2>🇪🇺 Projekt Erasmus+ „Zawodowcy z Informatyki na europejskim rynku pracy”</h2>
                     <p>Projekt skierowany jest do uczniów klas trzecich i czwartych o profilu technik informatyk, technik programista, technik teleinformatyk oraz technik urządzeń i systemów energetyki odnawialnej.</p>
                     <p>Więcej informacji znajdziesz na stronie projektu: <a href="https://erasmusplus.zsi.kielce.pl" target="_blank" rel="noopener noreferrer">erasmusplus.zsi.kielce.pl</a></p>
@@ -147,15 +160,19 @@
                     </div>
                 </article>
 
-                <article class="panel panel--game reveal" style="--d:320ms">
+                <!-- ---------- Panel: game ---------- -->
+
+                <article class="panel panel--game reveal" style="--reveal-delay: 320ms">
                     <div>
                         <h2>🎮 Zwiedzaj ZSI inaczej</h2>
                         <p>Wejdź do gry edukacyjnej stworzonej przez uczniów ZSI i odkrywaj szkolne zakamarki w nietypowy sposób.</p>
                     </div>
-                    <button class="btn" onclick="window.open('https://gra.zsi.kielce.pl', '_blank')">Zagraj</button>
+                    <button class="btn" data-open-url="https://gra.zsi.kielce.pl">Zagraj</button>
                 </article>
 
-                <article class="panel panel--guide reveal" style="--d:350ms">
+                <!-- ---------- Panel: guide ---------- -->
+
+                <article class="panel panel--guide reveal" style="--reveal-delay: 350ms">
                     <h2>🗓️ Jak się odnaleźć w budynku</h2>
                     <p>Sprawdzenie planu lekcji jest proste — użyj jednego z poniższych narzędzi:</p>
                     <ul class="dot-list">
@@ -165,28 +182,36 @@
                     </ul>
                 </article>
 
-                <article class="panel panel--fact reveal" style="--d:380ms">
+                <!-- ---------- Panel: fact ---------- -->
+
+                <article class="panel panel--fact reveal" style="--reveal-delay: 380ms">
                     <h2>💡 Ciekawostka informatyczna</h2>
                     <p class="fact-box" id="factBox">Ładowanie ciekawostki…</p>
                 </article>
 
-                <article class="panel panel--quiz reveal" style="--d:410ms">
+                <!-- ---------- Panel: quiz ---------- -->
+
+                <article class="panel panel--quiz reveal" style="--reveal-delay: 410ms">
                     <h2>🧠 Quiz INF.02 / INF.03</h2>
                     <div class="quiz-box">
-                        <p id="randomQuestion">Wczytywanie…</p>
-                        <div class="quiz-opts" id="quizOpts"></div>
-                        <div class="quiz-expl" id="quizExpl"></div>
-                        <button class="btn btn--ghost" id="quizNext" onclick="quizAdvance()">➡️ Następne pytanie</button>
+                        <p id="quizQuestion">Wczytywanie…</p>
+                        <div class="quiz-options" id="quizOptions"></div>
+                        <div class="quiz-explanation" id="quizExplanation"></div>
+                        <button class="btn btn--ghost" id="quizNext">➡️ Następne pytanie</button>
                         <div class="quiz-meta" id="quizMeta"></div>
                     </div>
                 </article>
 
-                <article class="panel panel--events reveal" style="--d:440ms">
+                <!-- ---------- Panel: events ---------- -->
+
+                <article class="panel panel--events reveal" style="--reveal-delay: 440ms">
                     <h2>📅 Wydarzenia szkolne (dni wolne)</h2>
                     <ul class="events-list" id="eventsList"></ul>
                 </article>
 
-                <article class="panel panel--holiday reveal" style="--d:470ms">
+                <!-- ---------- Panel: holiday ---------- -->
+
+                <article class="panel panel--holiday reveal" style="--reveal-delay: 470ms">
                     <h2>🎉 Nietypowe święto dnia</h2>
                     <div id="holidayText">Ładowanie…</div>
                 </article>
@@ -196,121 +221,146 @@
 
 
 
-                <article class="panel panel--space reveal" style="--d:480ms">
+                <!-- ---------- Panel: space ---------- -->
+
+
+
+
+
+
+                <article class="panel panel--space reveal" style="--reveal-delay: 480ms">
                     <h2>🔭 Kosmiczny Kalendarz</h2>
-                    <p id="apodHeading">Sprawdź, co NASA sfotografowała w dniu Twoich urodzin.</p>
-                    <div class="apod-controls">
+                    <p id="spaceHeading">Sprawdź, co NASA sfotografowała w dniu Twoich urodzin.</p>
+                    <div class="space-controls">
                         <label>Twoje urodziny:</label>
-                        <select id="apodDay" aria-label="Dzień"></select>
-                        <select id="apodMonth" aria-label="Miesiąc"></select>
-                        <select id="apodYear" aria-label="Rok"></select>
-                        <button class="btn btn--ghost" id="apodRandom" type="button">🎲 Losuj</button>
+                        <select id="spaceDay" aria-label="Dzień"></select>
+                        <select id="spaceMonth" aria-label="Miesiąc"></select>
+                        <select id="spaceYear" aria-label="Rok"></select>
+                        <button class="btn btn--ghost" id="spaceRandom" type="button">🎲 Losuj</button>
                     </div>
-                    <div class="apod-frame">
-                        <img id="apodImg" src="" alt="" hidden>
-                        <div class="apod-status" id="apodStatus">Łączę się z NASA…</div>
+                    <div class="space-frame">
+                        <img id="spaceImage" src="" alt="" hidden>
+                        <div class="media-status" id="spaceStatus">Łączę się z NASA…</div>
                     </div>
-                    <div class="apod-caption">
-                        <strong id="apodTitle"></strong>
-                        <span id="apodMeta"></span>
+                    <div class="space-caption">
+                        <strong id="spaceTitle"></strong>
+                        <span id="spaceMeta"></span>
                     </div>
-                    <small class="src">Źródło: <a href="https://api.nasa.gov" target="_blank" rel="noopener noreferrer">NASA APOD</a></small>
+                    <small class="source-note">Źródło: <a href="https://api.nasa.gov" target="_blank" rel="noopener noreferrer">NASA APOD</a></small>
                 </article>
 
-                <article class="panel panel--art reveal" style="--d:500ms">
+                <!-- ---------- Panel: art ---------- -->
+
+                <article class="panel panel--art reveal" style="--reveal-delay: 500ms">
                     <h2>🖼️ Quiz: zgadnij obraz</h2>
                     <div class="quiz-box">
                         <div class="art-frame">
-                            <img id="metImg" src="" alt="" hidden>
-                            <div class="apod-status" id="metStatus">Losuję obraz…</div>
+                            <img id="artImage" src="" alt="" hidden>
+                            <div class="media-status" id="artStatus">Losuję obraz…</div>
                         </div>
-                        <p id="metQuestion"></p>
-                        <div class="quiz-opts" id="metOpts"></div>
-                        <div class="quiz-expl" id="metExpl"></div>
-                        <button class="btn btn--ghost" id="metNext" type="button">➡️ Następny obraz</button>
-                        <div class="quiz-meta" id="metMeta"></div>
+                        <p id="artQuestion"></p>
+                        <div class="quiz-options" id="artOptions"></div>
+                        <div class="quiz-explanation" id="artExplanation"></div>
+                        <button class="btn btn--ghost" id="artNext" type="button">➡️ Następny obraz</button>
+                        <div class="quiz-meta" id="artMeta"></div>
                     </div>
-                    <small class="src">Źródło: <a href="https://metmuseum.github.io" target="_blank" rel="noopener noreferrer">The Met Open Access</a> (domena publiczna)</small>
+                    <small class="source-note">Źródło: <a href="https://metmuseum.github.io" target="_blank" rel="noopener noreferrer">The Met Open Access</a> (domena publiczna)</small>
                 </article>
 
-                <article class="panel panel--library reveal" style="--d:520ms">
+                <!-- ---------- Panel: library ---------- -->
+
+                <article class="panel panel--library reveal" style="--reveal-delay: 520ms">
                     <h2>📚 Bosoteka</h2>
-                    <div class="lib-grid">
+                    <div class="library-grid">
                         <div>
-                            <p class="lib-hint">Szkolna biblioteka i czytelnia to miejsce na lekturę, naukę i spokojną chwilę między lekcjami. Nowości, ogłoszenia i informacje o godzinach otwarcia znajdziesz na naszym profilu:</p>
+                            <p class="library-hint">Szkolna biblioteka i czytelnia to miejsce na lekturę, naukę i spokojną chwilę między lekcjami. Nowości, ogłoszenia i informacje o godzinach otwarcia znajdziesz na naszym profilu:</p>
                             <p><a href="https://www.facebook.com/p/Biblioteka-i-czytelnia-ZSI-100090840606346/" target="_blank" rel="noopener noreferrer">Biblioteka i czytelnia ZSI na Facebooku</a></p>
                         </div>
-                        <div class="lib-pick" id="libPick">
-                            <div class="lib-cover" id="libCover" aria-hidden="true">📖</div>
-                            <div class="lib-pick-text">
+                        <div class="library-pick" id="libraryPick">
+                            <div class="library-cover" id="libraryCover" aria-hidden="true">📖</div>
+                            <div class="library-pick-text">
                                 <small>Książka dnia z Open Library</small>
-                                <strong id="libTitle">Wczytywanie…</strong>
-                                <span id="libAuthor"></span>
+                                <strong id="libraryTitle">Wczytywanie…</strong>
+                                <span id="libraryAuthor"></span>
                             </div>
                         </div>
                     </div>
-                    <div class="euro" id="euroCard">
-                        <div class="euro-img">
-                            <img id="euroImg" src="" alt="" hidden>
-                            <div class="apod-status" id="euroStatus">Otwieram archiwum Europy…</div>
+                    <div class="europeana" id="europeanaCard">
+                        <div class="europeana-image">
+                            <img id="europeanaImage" src="" alt="" hidden>
+                            <div class="media-status" id="europeanaStatus">Otwieram archiwum Europy…</div>
                         </div>
-                        <div class="euro-text">
+                        <div class="europeana-text">
                             <small>🏛️ Wehikuł czasu — skarby z polskich zbiorów cyfrowych</small>
-                            <strong id="euroTitle"></strong>
-                            <span id="euroMeta"></span>
-                            <span class="euro-ago" id="euroAgo"></span>
-                            <a id="euroLink" class="lib-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Zobacz w Europeanie</a>
-                            <button class="btn btn--ghost" id="euroNext" type="button">🎲 Inny skarb</button>
+                            <strong id="europeanaTitle"></strong>
+                            <span id="europeanaMeta"></span>
+                            <span class="europeana-age" id="europeanaAge"></span>
+                            <a id="europeanaLink" class="library-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Zobacz w Europeanie</a>
+                            <button class="btn btn--ghost" id="europeanaNext" type="button">🎲 Inny skarb</button>
                         </div>
                     </div>
-                    <small class="src">Źródła: <a href="https://openlibrary.org/developers/api" target="_blank" rel="noopener noreferrer">Open Library</a> · <a href="https://www.europeana.eu" target="_blank" rel="noopener noreferrer">Europeana</a></small>
+                    <small class="source-note">Źródła: <a href="https://openlibrary.org/developers/api" target="_blank" rel="noopener noreferrer">Open Library</a> · <a href="https://www.europeana.eu" target="_blank" rel="noopener noreferrer">Europeana</a></small>
                 </article>
 
-                <article class="panel panel--core reveal" style="--d:510ms">
+                <!-- ---------- Panel: core ---------- -->
+
+                <article class="panel panel--core reveal" style="--reveal-delay: 510ms">
                     <h2>🔬 Świat nauki</h2>
-                    <p class="lib-hint" id="coreTopic">Praca naukowa z otwartym dostępem</p>
-                    <div class="core-article" id="coreList">Wczytywanie…</div>
-                    <small class="src">Źródło: <a href="https://core.ac.uk/" target="_blank" rel="noopener noreferrer">CORE</a></small>
+                    <p class="library-hint" id="coreTopic">Praca naukowa z otwartym dostępem</p>
+                    <div class="core-article" id="coreArticle">Wczytywanie…</div>
+                    <small class="source-note">Źródło: <a href="https://core.ac.uk/" target="_blank" rel="noopener noreferrer">CORE</a></small>
                 </article>
 
-                <article class="panel panel--good reveal" style="--d:500ms">
+                <!-- ---------- Panel: good ---------- -->
+
+                <article class="panel panel--good reveal" style="--reveal-delay: 500ms">
                     <h2>🌟 Dobre wiadomości</h2>
                     <ul class="news-list" id="goodList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: <a href="https://dobrewiadomosci.net.pl/" target="_blank" rel="noopener noreferrer">dobrewiadomosci.net.pl</a></small>
+                    <small class="source-note">Źródło: <a href="https://dobrewiadomosci.net.pl/" target="_blank" rel="noopener noreferrer">dobrewiadomosci.net.pl</a></small>
                 </article>
 
-                <article class="panel panel--history reveal" style="--d:520ms">
+                <!-- ---------- Panel: history ---------- -->
+
+                <article class="panel panel--history reveal" style="--reveal-delay: 520ms">
                     <h2>📜 Tego dnia w historii</h2>
                     <ul class="events-list" id="historyList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: <a href="https://pl.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a></small>
+                    <small class="source-note">Źródło: <a href="https://pl.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a></small>
                 </article>
 
 
 
-                <article class="panel panel--air reveal" style="--d:530ms">
+                <!-- ---------- Panel: sun ---------- -->
+
+
+
+                <article class="panel panel--sun reveal" style="--reveal-delay: 530ms">
                     <h2>☀️ Słońce dziś</h2>
-                    <ul class="kv-list" id="airList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></small>
+                    <ul class="kv-list" id="sunList"><li>Wczytywanie…</li></ul>
+                    <small class="source-note">Źródło: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></small>
                 </article>
 
-                <article class="panel panel--iss reveal" style="--d:560ms">
+                <!-- ---------- Panel: iss ---------- -->
+
+                <article class="panel panel--iss reveal" style="--reveal-delay: 560ms">
                     <h2>🛰️ Stacja ISS teraz</h2>
                     <ul class="kv-list" id="issList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: wheretheiss.at</small>
+                    <small class="source-note">Źródło: wheretheiss.at</small>
                 </article>
 
-                <article class="panel panel--gh reveal" style="--d:590ms">
+                <!-- ---------- Panel: github ---------- -->
+
+                <article class="panel panel--github reveal" style="--reveal-delay: 590ms">
                     <h2>🐙 Hity GitHuba (7 dni)</h2>
-                    <ul class="kv-list" id="ghList"><li>Wczytywanie…</li></ul>
-                    <small class="src">Źródło: GitHub</small>
+                    <ul class="kv-list" id="githubList"><li>Wczytywanie…</li></ul>
+                    <small class="source-note">Źródło: GitHub</small>
                 </article>
             </div>
         </main>
     </div>
 
-    <!-- Pasek przewijany -->
+    <!-- ========== PASEK PRZEWIJANY ========== -->
     <div class="ticker" aria-hidden="true">
-        <div class="ticker-track" id="tickerTrack"><span class="item">Wczytywanie danych…</span></div>
+        <div class="ticker-track" id="tickerTrack"><span class="ticker-item">Wczytywanie danych…</span></div>
     </div>
 
     <footer>
@@ -319,19 +369,21 @@
         <small>WeatherAPI.com· Open-Meteo · NBP · Dobrewiadomosci.net.pl · Wikipedia · Open Library · Wheretheiss.at · NASA APOD · GitHub · The Met Open Access · CORE · Europeana</small>
     </footer>
 
-    <!-- Tryb nocny: całkowicie czarny ekran, bez żadnych elementów (po lekcjach) -->
+    <!-- ========== TRYB NOCNY ========== -->
+    <!-- Całkowicie czarny ekran, bez żadnych elementów (po lekcjach). -->
     <div class="night" id="night" aria-hidden="true"></div>
 
-    <!-- Plakat: pełnoekranowy, pokazuje się cyklicznie, gdy w plakaty/plakaty.json jest aktywny wpis -->
+    <!-- ========== PLAKAT ========== -->
+    <!-- Pełnoekranowy; pokazuje się cyklicznie, gdy w posters/posters.json jest aktywny wpis. -->
     <div class="poster" id="poster" role="dialog" aria-label="Plakat" aria-hidden="true">
-        <img id="posterImg" src="" alt="">
+        <img id="posterImage" src="" alt="">
         <div class="poster-timer" id="posterTimer"></div>
     </div>
 
-    <!-- Lightbox galerii -->
-    <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Zamknij">✕</button>
-        <img id="lightboxImg" src="" alt="">
+    <!-- ========== LIGHTBOX GALERII ========== -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" aria-label="Zamknij">✕</button>
+        <img id="lightboxImage" src="" alt="">
     </div>
 
     <script src="script.js"></script>

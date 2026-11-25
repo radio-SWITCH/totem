@@ -1,0 +1,633 @@
+/* ==========================================================================
+   style.css — Quiz „Jaki to język?” (Europejski Dzień Języków Obcych, ZSI Kielce)
+   Style strony quizu (index.html w tym folderze).
+   
+   Konwencje (jak w całym repo, patrz README.md w katalogu głównym):
+     • zmienne: --color-* (role: bg, text, accent, good, bad, line)
+     • klasy: kebab-case, modyfikatory przez „--” (btn--primary), stany przez „is-*”
+     • identyfikatory (#id): camelCase (playButton, viewStart)
+   ========================================================================== */
+
+/* ==========================================================================
+   ZMIENNE (DESIGN TOKENS)
+   ========================================================================== */
+:root {
+    --color-bg: #12131A;
+    --color-bg-soft: #1E2029;
+    --color-text: #F3EFE6;
+    --color-accent: #FFB627;
+    --color-good: #2FB8AC;
+    --color-bad: #FF5D5D;
+    --color-line: rgba(243, 239, 230, .14);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, system-ui, -apple-system, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+}
+
+button {
+    font-family: inherit;
+}
+
+/* ==========================================================================
+   UKŁAD
+   ========================================================================== */
+.view {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 20px;
+}
+
+.view[hidden] {
+    display: none;
+}
+
+.stage {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    text-align: center;
+}
+
+.stage--narrow {
+    max-width: 560px;
+}
+
+/* ==========================================================================
+   EQUALIZER (EKRAN STARTOWY)
+   ========================================================================== */
+.equalizer {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    height: 60px;
+    margin-bottom: 2px;
+}
+
+.equalizer span {
+    width: 7px;
+    border-radius: 3px;
+    background: var(--color-accent);
+    animation: equalizer-bounce 1.2s ease-in-out infinite;
+}
+
+.equalizer span:nth-child(odd) {
+    background: var(--color-good);
+}
+
+.equalizer span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.equalizer span:nth-child(2) {
+    animation-delay: .15s;
+}
+
+.equalizer span:nth-child(3) {
+    animation-delay: .3s;
+}
+
+.equalizer span:nth-child(4) {
+    animation-delay: .45s;
+}
+
+.equalizer span:nth-child(5) {
+    animation-delay: .2s;
+}
+
+.equalizer span:nth-child(6) {
+    animation-delay: .35s;
+}
+
+.equalizer span:nth-child(7) {
+    animation-delay: .05s;
+}
+
+@keyframes equalizer-bounce {
+
+    0%,
+    100% {
+        height: 12px;
+    }
+
+    50% {
+        height: 52px;
+    }
+}
+
+/* ==========================================================================
+   TYPOGRAFIA
+   ========================================================================== */
+.headline {
+    font-size: clamp(28px, 6vw, 50px);
+    font-weight: 900;
+    letter-spacing: -.02em;
+    line-height: 1.06;
+    margin: 0;
+}
+
+.headline--mid {
+    font-size: clamp(24px, 5vw, 34px);
+}
+
+.subhead {
+    font-size: clamp(18px, 3.4vw, 25px);
+    font-weight: 600;
+    color: var(--color-accent);
+    margin: 0;
+}
+
+.lede {
+    font-size: clamp(15px, 2.2vw, 18px);
+    line-height: 1.55;
+    color: rgba(243, 239, 230, .82);
+    max-width: 56ch;
+    margin: 0;
+}
+
+.fineprint {
+    font-size: .85rem;
+    color: rgba(243, 239, 230, .6);
+    margin: 0;
+}
+
+.credit {
+    font-size: .85rem;
+    color: rgba(243, 239, 230, .5);
+    text-align: center;
+    padding: 18px 0 26px;
+}
+
+.storage-warning {
+    color: var(--color-bad);
+    font-size: .85rem;
+    max-width: 520px;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   PANEL PLAKATU (KARTA Z UCIĘTYMI ROGAMI)
+   ========================================================================== */
+.poster-panel {
+    background: var(--color-bg-soft);
+    border: 2px solid var(--color-line);
+    clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+    position: relative;
+    padding: clamp(20px, 5vw, 36px);
+    width: 100%;
+}
+
+.poster-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 26px;
+    height: 26px;
+    background: var(--color-accent);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+.panel-title {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0 0 12px;
+}
+
+/* ==========================================================================
+   PRZYCISKI
+   ========================================================================== */
+.btn {
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.btn--primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-weight: 800;
+    font-size: 1.1rem;
+    padding: 16px 36px;
+    transition: transform .12s ease;
+}
+
+.btn--primary:hover {
+    transform: translateY(-2px);
+}
+
+.btn--primary:active {
+    transform: translateY(0) scale(.98);
+}
+
+.btn--huge {
+    font-size: clamp(1.15rem, 3vw, 1.5rem);
+    padding: 20px 48px;
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-line);
+    font-weight: 700;
+    padding: 12px 28px;
+}
+
+.btn--danger {
+    background: var(--color-bad);
+    color: var(--color-bg);
+    font-weight: 800;
+    padding: 12px 24px;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--color-good);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   TABELA WYNIKÓW
+   ========================================================================== */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.leaderboard-row {
+    display: grid;
+    grid-template-columns: 26px 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(243, 239, 230, .04);
+    font-size: .95rem;
+}
+
+.leaderboard-row.is-you {
+    background: rgba(255, 182, 39, .16);
+    border: 1px solid var(--color-accent);
+}
+
+.leaderboard-rank {
+    font-weight: 800;
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-name {
+    text-align: left;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leaderboard-class {
+    color: rgba(243, 239, 230, .65);
+    font-size: .85rem;
+}
+
+.leaderboard-time {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.leaderboard-empty {
+    color: rgba(243, 239, 230, .6);
+    font-size: .9rem;
+    margin: 0;
+}
+
+/* ==========================================================================
+   FORMULARZ
+   ========================================================================== */
+.form-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.field input {
+    background: var(--color-bg);
+    border: 2px solid var(--color-line);
+    border-radius: 10px;
+    color: var(--color-text);
+    padding: 14px 16px;
+    font-size: 1.05rem;
+}
+
+.field input:focus-visible {
+    outline: 3px solid var(--color-good);
+    outline-offset: 0;
+    border-color: var(--color-good);
+}
+
+.form-error {
+    color: var(--color-bad);
+    font-weight: 700;
+    margin: 0;
+}
+
+/* ==========================================================================
+   QUIZ
+   ========================================================================== */
+.quiz-top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.round-label {
+    color: rgba(243, 239, 230, .75);
+}
+
+.timer-display {
+    color: var(--color-accent);
+    font-size: 1.1rem;
+}
+
+.quiz-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.play-circle {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    color: var(--color-bg);
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.play-label {
+    margin: 0;
+    font-weight: 700;
+    color: rgba(243, 239, 230, .85);
+}
+
+.question {
+    font-size: clamp(1.1rem, 3vw, 1.35rem);
+    margin: 8px 0 4px;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    width: 100%;
+}
+
+.option-button {
+    background: var(--color-bg);
+    border: 2px solid var(--color-line);
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: clamp(.95rem, 2.2vw, 1.1rem);
+    padding: 18px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    min-height: 64px;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+.option-button:disabled {
+    cursor: default;
+}
+
+.option-button.is-correct {
+    background: rgba(47, 184, 172, .18);
+    border-color: var(--color-good);
+    color: var(--color-good);
+}
+
+.option-button.is-wrong {
+    background: rgba(255, 93, 93, .18);
+    border-color: var(--color-bad);
+    color: var(--color-bad);
+}
+
+/* ==========================================================================
+   WYNIK
+   ========================================================================== */
+.result-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.result-score {
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+    font-weight: 900;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.result-time {
+    font-size: 1.15rem;
+    color: var(--color-accent);
+    margin: 0;
+    font-weight: 700;
+}
+
+.result-message {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.leaderboard-panel-inner {
+    width: 100%;
+    margin-top: 6px;
+}
+
+/* ==========================================================================
+   PANEL ORGANIZATORA
+   ========================================================================== */
+.admin-gear {
+    position: fixed;
+    bottom: 14px;
+    right: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(243, 239, 230, .15);
+    color: rgba(243, 239, 230, .25);
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 400;
+}
+
+.admin-gear:hover {
+    color: rgba(243, 239, 230, .6);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 600;
+    padding: 20px;
+}
+
+.modal-backdrop[hidden] {
+    display: none;
+}
+
+.modal-panel {
+    background: var(--color-bg-soft);
+    border: 2px solid var(--color-line);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+}
+
+.modal-panel--wide {
+    max-width: 760px;
+    max-height: 82vh;
+    overflow-y: auto;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-table-wrap {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--color-line);
+    white-space: nowrap;
+}
+
+.admin-summary {
+    color: rgba(243, 239, 230, .7);
+    margin: 0;
+}
+
+/* ==========================================================================
+   POWIADOMIENIA (TOAST)
+   ========================================================================== */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-text);
+    color: var(--color-bg);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    z-index: 700;
+    max-width: 90vw;
+    text-align: center;
+}
+
+.toast.is-error {
+    background: var(--color-bad);
+}
+
+/* ==========================================================================
+   KONFETTI
+   ========================================================================== */
+.confetti-piece {
+    position: fixed;
+    top: -20px;
+    width: 10px;
+    height: 16px;
+    opacity: .9;
+    border-radius: 2px;
+    pointer-events: none;
+    animation: confetti-fall linear forwards;
+    z-index: 500;
+}
+
+@keyframes confetti-fall {
+    to {
+        transform: translateY(110vh) rotate(540deg);
+        opacity: .4;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .equalizer span {
+        animation: none;
+        height: 28px;
+    }
+
+    .btn--primary:hover,
+    .btn--primary:active {
+        transform: none;
+    }
+
+    .confetti-piece {
+        display: none;
+    }
+}
