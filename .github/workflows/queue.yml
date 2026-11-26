@@ -1,35 +1,40 @@
-# Plik umieść jako .github/workflows/queue.yml
-# Co 5 minut (pn–pt, w godzinach pracy totemu) pobiera kolejkę radiowęzła i zapisuje ją
-# do queue.json w repozytorium. Strona na GitHub Pages czyta ten plik, więc CORS nie gra roli.
-name: Kolejka radiowęzła
+name: Update radio queue
 
 on:
   schedule:
-    - cron: '*/5 4-16 * * 1-5'   # czas UTC: obejmuje 7:00–17:25 zarówno zimą, jak i latem
-  workflow_dispatch:              # pozwala uruchomić ręcznie (Actions → Run workflow)
+    - cron: '2-57/5 4-16 * * 1-5'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: kolejka-radiowezla
+  group: update-radio-queue
   cancel-in-progress: false
 
 jobs:
-  fetch:
+  update:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
-      - name: Pobierz kolejkę
+      - name: Fetch queue
         run: |
           curl -fsS --max-time 20 https://radio.zsi.kielce.pl/api/public/queue -o /tmp/queue.json
-          python3 -c "import json; json.load(open('/tmp/queue.json'))"   # przerwij, jeśli to nie jest poprawny JSON
-          cp /tmp/queue.json queue.json                                  # ścieżka: obok index.html
+          python3 -c "import json; d = json.load(open('/tmp/queue.json')); assert isinstance(d.get('queue'), list)"
 
-      - name: Zapisz, jeśli się zmieniła
+      - name: Publish to queue-data branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth=1 origin queue-data 2>/dev/null && git show FETCH_HEAD:queue.json 2>/dev/null | cmp -s - /tmp/queue.json; then
+            echo "Queue unchanged"
+            exit 0
+          fi
+          git checkout --orphan queue-data-new
+          git rm -rf --quiet . || true
+          cp /tmp/queue.json queue.json
           git add queue.json
-          git diff --cached --quiet || (git commit -m "Aktualizacja kolejki radiowęzła" && git push)
+          git commit --quiet -m "Update radio queue"
+          git push --force origin queue-data-new:queue-data
